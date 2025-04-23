@@ -1,0 +1,9 @@
+[submodule "third_party/MNN"]
+	path = third_party/MNN
+	url = https://github.com/alibaba/MNN.git
+[submodule "third_party/cppjieba"]
+	path = third_party/cppjieba
+	url = https://github.com/yanyiwu/cppjieba
+[submodule "third_party/tokenizers-cpp"]
+	path = third_party/tokenizers-cpp
+	url = https://github.com/mlc-ai/tokenizers-cpp.git
