@@ -4,11 +4,9 @@
 
 ---
 
-English Ver [here](README_en.md)
-
 ## 🧠 简介
 
-本工程提供了一个示例，实现了离线推理版本的 Bert-VITS2 （2.3版本）:
+本工程提供了一个示例，实现了离线推理版本的 Bert-VITS2 （2.3版本），目前仅适配了中文：
 
 - 🧠 **蒸馏版中文 BERT 模型** ：中文 Bert 模型使用了一个自制的蒸馏版本，基于 [Wikipedia 中文](https://huggingface.co/datasets/pleisto/wikipedia-cn-20230720-filtered)以及 [SkyPile 中文数据集](https://huggingface.co/datasets/Skywork/SkyPile-150B)，共计约 1000W 条文本进行模型蒸馏，将体积缩减至 30M。（也不知道蒸的咋样反正最后看曲线是收敛了 -.-)
 - 🏗 **MNN** ：基于 MNN 推理框架实现 BV2 的整个推理流程，推理参考自其 onnx 推理代码。(pth 直接转不成功，你没资格啊，你没资格.jpg)
@@ -53,7 +51,11 @@ Waveform output (.wav)
 ### Clone with submodules
 
 ```bash
-git clone --recurse-submodules https://github.com/yourname/Bert-VITS2-MNN.git
+GIT_LFS_SKIP_SMUDGE=1 git clone --recurse-submodules git@github.com:Voine/Bert-VITS2-MNN.git
+
+# for windows powershell
+$env:GIT_LFS_SKIP_SMUDGE=1; git clone --recurse-submodules git@github.com:Voine/Bert-VITS2-MNN.git
+
 cd Bert-VITS2-MNN
 ```
 
@@ -76,7 +78,7 @@ git submodule update --init --recursive
 
 ## 🛁 Git LFS 
 
-本工程的一些文件如 `.mnn`  `.wav` ，使用 lfs 进行存储，需要按照如下方式拉代码：
+本工程的一些文件如 `.mnn` ，使用 lfs 进行存储，需要按照如下方式拉代码：
 
 ```bash
 git lfs install
@@ -87,7 +89,6 @@ To track files (if contributing):
 
 ```bash
 git lfs track "*.mnn"
-git lfs track "*.wav"
 ```
 
 ---
@@ -105,13 +106,12 @@ git lfs track "*.wav"
 
 ## 💡 关于 - 模型蒸馏 -
 
-中文模型基于 [chinese-roberta-wwm-ext-large](https://huggingface.co/hfl/chinese-roberta-wwm-ext-large) 进行蒸馏，为适配移动端，大幅缩减了体积。原版有 1.2G ...
+中文模型基于 [chinese-roberta-wwm-ext-large](https://huggingface.co/hfl/chinese-roberta-wwm-ext-large) 进行蒸馏，为适配移动端，大幅缩减了体积。原版直接转换能有 1.2G ...
 
-蒸馏代码以及原始 onnx 文件详见 [`distill/distill.md`](distill/distill.md).
-
----
+蒸馏代码详见 [`distill/README.md`](distill/README.md).
 
 ---
+
 
 ## 💡 关于 - 自制模型替换 -
 
@@ -122,16 +122,23 @@ git lfs track "*.wav"
 
 ---
 
+## 💡 关于 - third_party -
+
+目前在 third_party 内的 cppjieba、tokenizer-cpp 以及 MNN 仅是为了提供头文件，若需要自行编译 tokenizer-cpp 并替换产物 [libtokenizers_c.a](cpptokenizer/src/main/jniStaticLibs/arm64-v8a/libtokenizers_c.a) [libtokenizers_cpp.a](cpptokenizer/src/main/jniStaticLibs/arm64-v8a/libtokenizers_cpp.a)，需修改 [huggingface_tokenizer.cc](third_party/tokenizers-cpp/src/huggingface_tokenizer.cc) 内的 add_special_tokens 默认为 true
+
+---
+
 ## 📋 工程大体结构
 
 ```
-app/
-├── src/main/                 
+├── app/
+├──── src/main/                 
 │           ├── assets               # mnn bert model, cppjieba dic, mnn bv2model
 │           ├── java/preprocess      # Text preprocess code
-├── bertvits2/                       # Bert-VITS2 infer code
+├── bertvits2                        # Bert-VITS2 infer code
 ├── cppjieba                         # cppjieba interface 
 ├── cpptokenizer                     # cpptokenizer interface
+├── third_party                      # provide hpp
 
 ```
 
@@ -139,7 +146,7 @@ app/
 
 ## 🙌 鸣谢
 
-本工程基于以下前辈们的贡献做了一些微不足道的搬砖工作，也希望能为后续在端智能推理研究的小伙伴提供一些参考。
+本工程基于以下前辈们的贡献做了一些微不足道的搬砖工作，也希望能为后续在端智能推理捣鼓的小伙伴提供一些参考。
 
 - [VITS](https://github.com/jaywalnut310/vits)
 - [BertVITS2](https://github.com/fishaudio/Bert-VITS2)
@@ -163,5 +170,3 @@ app/
 ### 严禁用于任何政治相关用途。
 
 ---
-
-Made with ❤️ by [Voine] · License: MIT
