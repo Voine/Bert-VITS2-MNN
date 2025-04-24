@@ -12,7 +12,7 @@
 #include <sstream>
 #include <MNN/Tensor.hpp>
 #include <utility>
-#include "bert_vits2_loader.hpp"
+#include "bert_vits2_v23_loader.hpp"
 
 namespace MNN_BERT_VITS2 {
 
@@ -42,15 +42,15 @@ namespace MNN_BERT_VITS2 {
         return value;
     }
 
-    void print_output_dim(std::string output_name, MNN::Express::VARP output) {
+    void print_output_dim(const std::string& output_name, const MNN::Express::VARP& output) {
         std::ostringstream dimInfo;
         auto output_info = output->getInfo();
-        for (int d=0; d<output_info->dim.size(); ++d) {
-            dimInfo << output_info->dim[d] << ", ";
+        for (int d : output_info->dim) {
+            dimInfo << d << ", ";
         }
         MNNBV2PRINT("Output Name: %s Dim: %s\n", output_name.c_str(), dimInfo.str().c_str());
     }
-    void print_output_value(int limit,std::string name,  MNN::Express::VARP output, bool needInt = false){
+    void print_output_value(int limit, const std::string& name,  const MNN::Express::VARP& output, bool needInt = false){
         std::ostringstream valueInfo;
         if (needInt) {
             auto ptr = output->readMap<int>();
@@ -92,7 +92,7 @@ namespace MNN_BERT_VITS2 {
         }
         auto repeated_bert = MNN::Express::_Concat(repeated_list, 0); // 输出 shape [totalItemCount, 1024]
         auto output_bert_1 = MNN::Express::_RandomUnifom(MNN::Express::_Shape(repeated_bert, true), halide_type_of<float>(), 0.0f, 1.0f, random_seed_0, random_seed_1);
-        auto output_bert_2 = MNN::Express::_RandomUnifom(MNN::Express::_Shape(repeated_bert, true), halide_type_of<float>(), 0.0f, 1.0f, random_seed_0, random_seed_1);;
+        auto output_bert_2 = MNN::Express::_RandomUnifom(MNN::Express::_Shape(repeated_bert, true), halide_type_of<float>(), 0.0f, 1.0f, random_seed_0, random_seed_1);
 
         return {repeated_bert, output_bert_1, output_bert_2};
     }
@@ -145,11 +145,11 @@ namespace MNN_BERT_VITS2 {
 
         MNNBV2PRINT("Load sdp start forward\n");
         std::vector<MNN::Express::VARP> sdp_outputs  = g_sdp_module->onForward({zin, xout, g_expand_outputs, x_mask});
-        auto logw_sdp = sdp_outputs[0];
+        const auto& logw_sdp = sdp_outputs[0];
 
         MNNBV2PRINT("Load dp start forward \n");
         std::vector<MNN::Express::VARP> dp_outputs  = g_dp_module->onForward({std::move(xout), std::move(g_expand_outputs), std::move(x_mask)});
-        auto logw_dp = dp_outputs[0];
+        const auto& logw_dp = dp_outputs[0];
         auto dp_ratio = MNN::Express::_Scalar<float>(1 - sdp_ratiof);
         auto sdp_ratio = MNN::Express::_Scalar<float>(sdp_ratiof);
         auto logw = (logw_dp * dp_ratio) + (logw_sdp * sdp_ratio);
@@ -188,7 +188,7 @@ namespace MNN_BERT_VITS2 {
         return attn_mask;
     }
 
-    MNN::Express::VARP translate_attn(MNN::Express::VARP duration, MNN::Express::VARP mask) {
+    MNN::Express::VARP translate_attn(MNN::Express::VARP duration, const MNN::Express::VARP& mask) {
         // translate for generate_path func
         //b, _, t_y, t_x = mask.shape
         auto b = mask->getInfo()->dim[0];
@@ -366,7 +366,7 @@ namespace MNN_BERT_VITS2 {
         g_length_scale = scale;
     }
 
-    std::vector<float> start_audio_infer(const std::vector<int>& input_seq,
+    std::vector<float> start_audio_infer(const std::vector<int>& _input_seq,
                                          const std::vector<int>& _input_t,
                                          const std::vector<int>& _input_language,
                                          const std::vector<int>& _input_ids,
@@ -376,12 +376,12 @@ namespace MNN_BERT_VITS2 {
         MNNBV2PRINT("Starting audio inference... spkid %d\n", spkid);
         auto g_expand_outputs = translate_run_emb(spkid);
         auto bert_outputs = translate_run_bert(_input_ids, _input_word2ph, _attention_mask);
-        auto enc_outputs = translate_run_encoder(input_seq, _input_t, _input_language, bert_outputs[0], bert_outputs[1], bert_outputs[2], g_expand_outputs);
+        auto enc_outputs = translate_run_encoder(_input_seq, _input_t, _input_language, bert_outputs[0], bert_outputs[1], bert_outputs[2], g_expand_outputs);
         const auto& logs_p = enc_outputs[0];
         const auto& m_p = enc_outputs[1];
         const auto& x_mask = enc_outputs[2];
         const auto& xout = enc_outputs[3];
-        auto logw = translate_run_dp((int)input_seq.size(), xout, g_expand_outputs, x_mask);
+        auto logw = translate_run_dp((int)_input_seq.size(), xout, g_expand_outputs, x_mask);
         auto w_ceil = translate_w_ceil(logw, x_mask);
         auto y_lengths = translate_y_length(w_ceil);
         auto y_mask = translate_y_mask(y_lengths);

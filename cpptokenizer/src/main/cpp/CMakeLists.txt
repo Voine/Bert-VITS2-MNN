@@ -23,7 +23,7 @@ set_target_properties(tokenizers_rust_c
         ${TOKENIZER_RUST_C_LIB_DIR}
 )
 
-set(tokenizer_path "/Users/yrzhu/CLionProjects/tokenizers-cpp")
+set(tokenizer_path "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/tokenizers-cpp")
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${tokenizer_path}/include)
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library

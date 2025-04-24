@@ -26,13 +26,13 @@ namespace MNN_BERT_VITS2 {
             const std::string &dp_model_path,
             const std::string &emb_model_path,
             const std::string &flow_model_path,
-            const std::string &bert_model_path,
+            const std::string &bert_model_path
     );
 
     void set_length_scale(float length_scale);
 
     // 开始音频推理，返回推理结果（音频数据数组）
-    std::vector<float> start_audio_infer(const std::vector<int>& input_seq,
+    std::vector<float> start_audio_infer(const std::vector<int>& _input_seq,
                                          const std::vector<int>& _input_t,
                                          const std::vector<int>& _input_language,
                                          const std::vector<int>& _input_ids,

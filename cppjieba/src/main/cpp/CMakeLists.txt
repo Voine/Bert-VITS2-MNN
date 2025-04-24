@@ -9,9 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(${CMAKE_PROJECT_NAME} SHARED
         cppjieba.cpp)
 
+set(CPPJIEBA_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/cppjieba")
+
 include_directories(
-        cppjieba/deps/limonp/include
-        cppjieba/include
+        ${CPPJIEBA_ROOT}/deps/limonp/include
+        ${CPPJIEBA_ROOT}/include
 )
 
 

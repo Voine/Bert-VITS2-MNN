@@ -39,7 +39,7 @@ class BV2Preprocess(context: Context,
             jieba_idf,
             jieba_stop
         )
-        toneSandhi = ToneSandhi()
+        toneSandhi = ToneSandhi(jiebaNativeLib)
         normalizer = Normalizer()
     }
 
@@ -181,5 +181,4 @@ data class G2PResult(
     val word2ph: List<Int>
 )
 
-// 步骤 2：分句 + 分词 + 拼音转换（占位）
 data class WordPos(val word: String, val pos: String)

@@ -34,7 +34,7 @@ fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
     val inputText = uiState.inputText            // 当前输入的文本
     val selectedCharacter = uiState.selectedCharacter  // 当前选中的角色名称
     val isLoading = uiState.isLoading            // 加载状态
-    val characters = uiState.characters          // 静态角色列表\
+    val characters = uiState.characters          // 静态角色列表
     val lengthScale = uiState.currentLengthScale
     val logcat = uiState.logcat
 

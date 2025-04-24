@@ -5,7 +5,7 @@ import kotlin.collections.iterator
 /**
  * Author: Voine
  * Date: 2025/4/17
- * Description:
+ * Description: simple ver for normalizer: cn2an.transform(x, "an2cn")
  */
 class Normalizer {
 

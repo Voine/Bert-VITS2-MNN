@@ -1,6 +1,6 @@
 #include <jni.h>
 #include <string>
-#include "bert_vits2_loader.hpp"
+#include "bert_vits2_v23_loader.hpp"
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_bertvits2_BertVITS2JNI_initBertVITS2Loader(JNIEnv *env,

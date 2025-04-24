@@ -3,7 +3,7 @@ package com.example.bertvits2mnn.preprocess
 /**
  * Author: Voine
  * Date: 2025/4/21
- * Description:
+ * Description: translate from bv2 symbols file
  */
 val pad = "_"
 val punctuation = listOf("!", "?", "…", ",", ".", "'", "-")

@@ -56,7 +56,6 @@ class SoundPlayHandler {
         if (ch > 2 || ch < 0) throw Exception("不支持的通道数$ch！")
         if (sampleRate <= 0) throw Exception("不支持的采样率$sr！")
         sampleRate = sr
-//        Timber.tag(TAG).i("AudioTrack", "sampling rate:$sr channels:$ch")
         Log.d(TAG, "AudioTrack: sampling rate:$sr channels:$ch")
     }
 
@@ -67,7 +66,6 @@ class SoundPlayHandler {
     fun onHandleMessage(msg: Message) {
         val sound = msg.obj as FloatArray
         try {
-//            Timber.tag(TAG).d( "try to write arr....")
             Log.d(TAG, "try to write arr....")
             audioTrack?.write(sound, 0, sound.size, AudioTrack.WRITE_BLOCKING)
         } catch (e: Exception) {
