@@ -135,8 +135,6 @@ namespace MNN_BERT_VITS2 {
 
     MNN::Express::VARP translate_run_dp(int size, MNN::Express::VARP xout, MNN::Express::VARP g_expand_outputs, MNN::Express::VARP x_mask) {
         std::cout << "Initializing DP..." << std::endl;
-        const std::vector<std::string> input_names_dp{"zin", "x", "g", "x_mask"};
-        const std::vector<std::string> output_names_dp{"logw"};
         MNN::Express::VARP noise_scale_w = MNN::Express::_Scalar<float>(sdp_noise_scale);
 
         //zin = np.random.randn(x.shape[0], 2, x.shape[2]).astype(np.float32) * noise_scale_w
