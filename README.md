@@ -1,58 +1,52 @@
 # Bert-VITS2-MNN
 
-> ✨ A high-performance on-device TTS system for Chinese, powered by distilled BERT + VITS2 + MNN.
-
-![banner](assets/banner.png) <!-- 可以替成你的页面图 -->
+> ✨ [Bert-VITS2](https://github.com/fishaudio/Bert-VITS2) Android 版, 推理框架基于 [alibaba-MNN](https://github.com/alibaba/MNN).
 
 ---
 
-## 🧠 Introduction
+English Ver [here](README_en.md)
 
-This project brings Bert-VITS2 to Android, re-implemented using:
+## 🧠 简介
 
-- 🧠 **Distilled Chinese BERT** for lightweight semantic embedding
-- 🏗 **MNN** for efficient on-device inference
-- 🧹 **cppjieba** and **cpptokenizer** for fast native text preprocessing
+本工程提供了一个示例，实现了离线推理版本的 Bert-VITS2 （2.3版本）:
 
-All components run **entirely offline** on Android. No server or internet required.
+- 🧠 **蒸馏版中文 BERT 模型** ：中文 Bert 模型使用了一个自制的蒸馏版本，基于 Wikipedia 中文以及 SkyPile 中文数据集，共计约 1000W 条文本进行模型蒸馏，将体积缩减至 30M。（也不知道蒸的咋样反正最后看曲线是收敛了 -.-)
+- 🏗 **MNN** ：基于 MNN 推理框架实现 BV2 的整个推理流程，推理参考自其 onnx 推理代码。(pth 直接转不成功，你没资格啊，你没资格.jpg)
+- 🧹 **cppjieba** and **cpptokenizer** ：用来平替 Python 端的 jieba 分词以及 huggingface 的 tokenizer。一些 BV2 独有的文本预处理步骤使用 Kotlin 进行平替实现。(此过程 GPT 老祖帮了许多)
+
+整个过程在 Android 端全程 **离线推理** 无需任何联网服务.
 
 ---
 
-## 🔬 Architecture
+## 🔬 大体流程
 
 ```
 Input Text
    ↓
-Tokenization + G2P (cppjieba + tokenizer)
+Tokenization + G2P (cppjieba + tokenizer + kotlin code)
    ↓
 BERT embedding (distilled Chinese model)
    ↓
-Flow + Decoder (MNN)
+Encoder + Emb + DP/SDP + Flow + Decoder (BV2 infer by MNN)
    ↓
 Waveform output (.wav)
 ```
 
 ---
 
-## 🎵 Demo Audios
+## 🎵 示例音频
 
-Here are some sample results:
+此处提供一些中文音频示例，基于部分明日方舟语音集以及[原神语音集](https://www.bilibili.com/opus/804258696892776484)进行训练:
 
-| Text | Audio |
-|------|-------|
-| 你好，欢迎使用BertVITS2。| 🔊 [Play](./samples/nihao.wav) |
-| 我们的模型在手机上也能运行得非常流畅。| 🔊 [Play](./samples/smooth.wav) |
-
-```html
-<!-- Optional inline audio player -->
-<audio controls>
-  <source src="samples/nihao.wav" type="audio/wav">
-</audio>
-```
+| Text               | Character | Audio                                      |
+|--------------------|-----------|--------------------------------------------|
+| 博士，当初在龙门，我不该放你走的。  | 陈         | 🔊 [Play](./wav_sample/output_chen.wav)    |
+| 旅行者，好久不见。          | 珐露珊       | 🔊 [Play](./wav_sample/output_faruzan.wav) |
+| 工作还没有做完，又要开始搬砖了。   | 甘雨        | 🔊 [Play](./wav_sample/output_ganyu.wav)   |
 
 ---
 
-## ⚡ Quick Start
+## ⚡ 本地编译指南
 
 ### Clone with submodules
 
@@ -69,7 +63,7 @@ git submodule update --init --recursive
 
 ### Build for Android
 
-> 📦 Requires NDK r25+, CMake 3.22+, Android Studio Arctic Fox+
+> 📦 建议使用 Android Studio 进行工程编译，用 IDE 打开根目录即可
 
 ```bash
 # From project root
@@ -78,9 +72,9 @@ git submodule update --init --recursive
 
 ---
 
-## 🛁 Git LFS (for large models)
+## 🛁 Git LFS 
 
-This repo uses Git LFS for `.mnn` and `.wav` files.
+本工程的一些文件如 `.mnn`  `.wav` ，使用 lfs 进行存储，需要按照如下方式拉代码：
 
 ```bash
 git lfs install
@@ -96,58 +90,76 @@ git lfs track "*.wav"
 
 ---
 
-## 🛠️ Dependencies (via Submodule)
+## 🛠️ Submodule 依赖
 
-| Library | Path | Commit |
-|---------|------|--------|
-| MNN     | `third_party/MNN` | pinned @ abc1234 |
-| cppjieba| `third_party/cppjieba` | pinned @ def5678 |
-| cpptokenizer | `third_party/cpptokenizer` | pinned @ ghi9012 |
+| Library      | Path                         |
+|--------------|------------------------------|
+| [MNN](https://github.com/alibaba/MNN)        | `third_party/MNN`            |
+| [cppjieba](https://github.com/yanyiwu/cppjieba)     | `third_party/cppjieba`       |
+| [tokenizer-cpp](https://github.com/mlc-ai/tokenizers-cpp) | `third_party/tokenizers-cpp` |
 
-To update or verify:
-
-```bash
-git submodule update --init --recursive
-```
 
 ---
 
-## 💡 Model Distillation
+## 💡 关于 - 模型蒸馏 -
 
-We distilled a compact BERT encoder from `chinese-roberta-wwm-ext-large` using hidden state alignment and simplified tokenizer vocab.
+中文模型基于 [chinese-roberta-wwm-ext-large](https://huggingface.co/hfl/chinese-roberta-wwm-ext-large) 进行蒸馏，为适配移动端，大幅缩减了体积。原版有 1.2G ...
 
-Details coming in [`model/distill.md`](model/distill.md).
-
----
-
-## 🌍 Multilingual README
-
-You can switch to the 中文版 [这里](README.zh.md) 。
+蒸馏代码以及原始 onnx 文件详见 [`distill/distill.md`](distill/distill.md).
 
 ---
 
-## 📋 Project Layout
+---
+
+## 💡 关于 - 自制模型替换 -
+
+1. 如果你需要替换自己的模型尝试验证，首先需要参考 [BertVITS2](https://github.com/fishaudio/Bert-VITS2) 内的说明进行训练得到桌面端模型，目前仅支持 2.3 版本，本工程基于的 BV2 代码 commit 为 13424595，如需自制模型，建议 BV2 代码版本保持一致。
+2. 将你的 pth 模型转换成 onnx, onnx 导出脚本在  [这里](https://github.com/fishaudio/Bert-VITS2/blob/master/export_onnx.py)
+3. 使用 [MNN Convert](https://mnn-docs.readthedocs.io/en/latest/tools/convert.html) 将所有模块的 onnx 模型转成 mnn
+4. 放到 assets/bv2_model 内，如果你的模型名字有变化，则需要修改 VoiceViewModel.kt 内关于模型路径加载的部分。（硬编码字符串一时爽，一直硬编码一直爽）
+
+---
+
+## 📋 工程大体结构
 
 ```
 app/
-├── cpp/                 # Native code
-│   ├── tokenizer/       # cppjieba + cpptokenizer
-│   ├── tts_engine/      # MNN inference, flow, decoder
-├── assets/              # Pre-trained .mnn model files
-├── samples/             # Demo audio
+├── src/main/                 
+│           ├── assets               # mnn bert model, cppjieba dic, mnn bv2model
+│           ├── java/preprocess      # Text preprocess code
+├── bertvits2/                       # Bert-VITS2 infer code
+├── cppjieba                         # cppjieba interface 
+├── cpptokenizer                     # cpptokenizer interface
+
 ```
 
 ---
 
-## 🙌 Acknowledgements
+## 🙌 鸣谢
 
-This project is built on the shoulders of:
+本工程基于以下前辈们的贡献做了一些微不足道的搬砖工作，也希望能为后续在端智能推理研究的小伙伴提供一些参考。
 
 - [VITS](https://github.com/jaywalnut310/vits)
 - [BertVITS2](https://github.com/fishaudio/Bert-VITS2)
 - [MNN](https://github.com/alibaba/MNN)
 - [cppjieba](https://github.com/yanyiwu/cppjieba)
+- [tokenizer-cpp](https://github.com/mlc-ai/tokenizers-cpp)
 
 ---
 
-Made with ❤️ by [yourname] · License: MIT
+## 🛠️ 后续工作
+
+- 看一下日文版和英文版怎么搞
+- 迁移到[移动版老婆聊天器](https://github.com/Voine/ChatWaifu_Mobile)中
+
+---
+
+## 免责声明
+### 本项目仅供学习交流使用，禁止用于商业用途，作者纯为爱发电搞着玩的。
+
+### 严禁将此项目用于一切违反《中华人民共和国宪法》，《中华人民共和国刑法》，《中华人民共和国治安管理处罚法》和《中华人民共和国民法典》之用途。
+### 严禁用于任何政治相关用途。
+
+---
+
+Made with ❤️ by [Voine] · License: MIT
