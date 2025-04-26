@@ -163,6 +163,13 @@ git lfs track "*.mnn"
 
 ---
 
+## ✨  简介视频
+
+- [Video](https://www.bilibili.com/video/BV1f5Ldz5Enz)
+
+---
+
+
 ## 免责声明
 ### 本项目仅供学习交流使用，禁止用于商业用途，作者纯为爱发电搞着玩的。
 
