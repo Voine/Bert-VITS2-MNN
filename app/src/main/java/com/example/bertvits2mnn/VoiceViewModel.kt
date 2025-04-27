@@ -114,7 +114,7 @@ class VoiceViewModel : ViewModel() {
                 setLoading(true, "开始启动推理...")
                 val startTime = System.currentTimeMillis()
 
-                val result: FloatArray? = withContext(Dispatchers.IO) {
+                val result: FloatArray? = withContext(Dispatchers.Default) {
                     bertVITS2.startAudioInfer(
                         input_seq = bv2Infer.input_seq,
                         input_t = bv2Infer.input_t,
