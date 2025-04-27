@@ -662,11 +662,11 @@ class ToneSandhi(val jiebaJNI: CppJiebaJNI) {
         val used = BooleanArray(seg.size)
         for (i in seg.indices) {
             if (i > 0 && pinyins[i - 1].last().last() == '3' && pinyins[i].first().last() == '3' && !used[i - 1]) {
-                val prev = merged.removeAt(merged.lastIndex)
+                val prev = merged[merged.lastIndex]
                 if (!isReduplication(prev.word) && prev.word.length + seg[i].word.length <= 3) {
+                    val prev = merged.removeAt(merged.lastIndex)
                     merged.add(WordPos(prev.word + seg[i].word, prev.pos))
                     used[i] = true
-                    continue
                 } else {
                     merged.add(seg[i])
                 }
