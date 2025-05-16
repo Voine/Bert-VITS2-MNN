@@ -5,12 +5,12 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bertvits2.BertVITS2JNI
-import com.example.bertvits2mnn.preprocess.BV2Preprocess
-import com.example.bertvits2mnn.preprocess.intersperse
-import com.example.bertvits2mnn.preprocess.zhSymbolsMap
 import com.example.bertvits2mnn.utils.copyAssets2Local
 import com.example.bertvits2mnn.utils.saveWavFile
 import com.example.cpptokenizer.CppTokenizerJNI
+import com.example.textpreprocess.ch.BV2Preprocess
+import com.example.textpreprocess.ch.intersperse
+import com.example.textpreprocess.ch.zhSymbolsMap
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
