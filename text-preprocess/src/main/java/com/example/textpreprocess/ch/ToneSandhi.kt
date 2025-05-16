@@ -1,4 +1,4 @@
-package com.example.bertvits2mnn.preprocess
+package com.example.textpreprocess.ch
 import com.example.cppjieba.CppJiebaJNI
 import com.github.houbb.pinyin.constant.enums.PinyinStyleEnum
 import com.github.houbb.pinyin.util.PinyinHelper

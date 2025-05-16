@@ -31,7 +31,6 @@ class BertVITS2JNI {
     companion object {
         // Used to load the 'bertvits2' library on application startup.
         init {
-            System.loadLibrary("MNN_Vulkan")
             System.loadLibrary("MNN_Express")
             System.loadLibrary("MNN")
             System.loadLibrary("bertvits2")

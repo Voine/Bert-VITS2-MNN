@@ -1,4 +1,4 @@
-package com.example.bertvits2mnn.preprocess
+package com.example.textpreprocess.ch
 
 import android.content.Context
 import com.example.cppjieba.CppJiebaJNI
@@ -9,7 +9,7 @@ import kotlin.collections.listOf
 /**
  * Author: Voine
  * Date: 2025/4/17
- * Description: BertVits2 text preprocess
+ * Description: ch BertVits2 text preprocess
  */
 class BV2Preprocess(context: Context,
                     jieba_dict: String,

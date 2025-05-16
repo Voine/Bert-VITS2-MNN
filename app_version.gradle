@@ -1,0 +1,8 @@
+ext{
+    compileSdkVer = 35
+    minSdkVer = 29
+    targetSdkVer = 35
+    versionCodeExt = 4
+    versionNameExt = "1.0.3"
+    cmakeVer = "3.22.1"
+}

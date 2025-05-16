@@ -2,13 +2,14 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
 }
+apply from: '../app_version.gradle'
 
 android {
     namespace 'com.example.cpptokenizer'
-    compileSdk 35
+    compileSdk compileSdkVer
 
     defaultConfig {
-        minSdk 24
+        minSdk minSdkVer
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -31,7 +32,7 @@ android {
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
-            version "3.22.1"
+            version cmakeVer
         }
     }
     compileOptions {

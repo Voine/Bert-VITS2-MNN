@@ -1,16 +1,18 @@
 package com.example.bertvits2mnn
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bertvits2.BertVITS2JNI
-import com.example.bertvits2mnn.preprocess.BV2Preprocess
-import com.example.bertvits2mnn.preprocess.intersperse
-import com.example.bertvits2mnn.preprocess.zhSymbolsMap
 import com.example.bertvits2mnn.utils.copyAssets2Local
 import com.example.bertvits2mnn.utils.saveWavFile
 import com.example.cpptokenizer.CppTokenizerJNI
+import com.example.textpreprocess.ch.BV2Preprocess
+import com.example.textpreprocess.ch.intersperse
+import com.example.textpreprocess.ch.zhSymbolsMap
+import com.example.textpreprocess.jp.JapaneseTextPreprocessor
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
@@ -86,7 +88,15 @@ class VoiceViewModel : ViewModel() {
     }
 
     fun startAudioInference(text: String) {
-        runVits(text.trim())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            JapaneseTextPreprocessor().apply {
+                val success = initOpenJTalk("open_jtalk_dic_utf_8-1.11", BV2Application.instance.assets)
+                Log.i("JapaneseTextPreprocessor", "initOpenJTalk success: $success")
+                val result = g2p("こんにちは,世界ー!")
+                Log.i("JapaneseTextPreprocessor", "text2sepKata result: $result")
+            }
+        }
+//        runVits(text.trim())
     }
 
     fun selectCharacter(string: String) {
