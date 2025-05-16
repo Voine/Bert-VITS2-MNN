@@ -1,4 +1,4 @@
-package com.example.bertvits2mnn.preprocess
+package com.example.textpreprocess.ch
 
 /**
  * Author: Voine

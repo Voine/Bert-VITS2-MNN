@@ -42,8 +42,8 @@ android {
 
 dependencies {
     implementation project(':bertvits2')
-    implementation project(':cppjieba')
     implementation project(':cpptokenizer')
+    implementation project(':text-preprocess')
     implementation libs.androidx.core.ktx
     implementation platform(libs.androidx.compose.bom)
     implementation libs.androidx.lifecycle.runtime.ktx

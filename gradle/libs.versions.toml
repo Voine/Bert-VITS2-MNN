@@ -12,6 +12,7 @@ appcompat = "1.6.1"
 material = "1.10.0"
 gson = "2.10.1"
 pinyin = "0.4.0"
+icu = '68.1'
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,6 +37,7 @@ androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", nam
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 pinyin = { group = "com.github.houbb", name = "pinyin", version.ref = "pinyin" }
+icu4j = { group = "com.ibm.icu", name = "icu4j", version.ref = "icu" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
