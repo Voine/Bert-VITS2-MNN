@@ -29,7 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
-    // 从 ViewModel 获取 UI 状态（假设 ViewModel 已经实现这些状态和方法）
+    // 从 ViewModel 获取 UI 状态
     val uiState by viewModel.uiState.collectAsStateWithLifecycle(initialValue = fakeUIState)
     val inputText = uiState.inputText            // 当前输入的文本
     val selectedCharacter = uiState.selectedCharacter  // 当前选中的角色名称
@@ -37,6 +37,7 @@ fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
     val characters = uiState.characters          // 静态角色列表
     val lengthScale = uiState.currentLengthScale
     val logcat = uiState.logcat
+    val saveBtnEnabled = uiState.saveBtnEnabled
 
     // 本地状态：控制角色选择底部弹窗的显示
     var showCharacterSheet by remember { mutableStateOf(false) }
@@ -82,15 +83,29 @@ fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
 
             Spacer(modifier = Modifier.height(16.dp))
             val keyboardController = LocalSoftwareKeyboardController.current
-            // “生成”按钮，点击触发音频推理
-            Button(
-                onClick = {
-                    keyboardController?.hide()
-                    viewModel.startAudioInference(inputText)  // 调用 ViewModel 中的生成音频推理方法
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "生成")
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                // “生成”按钮，点击触发音频推理
+                Button(
+                    onClick = {
+                        keyboardController?.hide()
+                        viewModel.startAudioInference(inputText)  // 调用 ViewModel 中的生成音频推理方法
+                    },
+                    modifier = Modifier.fillMaxWidth().weight(1f)
+                ) {
+                    Text(text = "生成")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    enabled = saveBtnEnabled,
+                    onClick = {
+                        keyboardController?.hide()
+                        viewModel.saveLocal(uiState.savedResult)
+                    },
+                    modifier = Modifier.fillMaxWidth().weight(1f)
+                ) {
+                    Text(text = "保存")
+                }
             }
 
             //logcat area

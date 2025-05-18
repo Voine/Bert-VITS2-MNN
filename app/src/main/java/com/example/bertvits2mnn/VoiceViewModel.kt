@@ -106,10 +106,41 @@ class VoiceViewModel : ViewModel() {
         bertVITS2.setAudioLengthScale(lengthScale)
     }
 
+    fun saveLocal(savedResult: FloatArray?) {
+        val path = BV2Application.context.getExternalFilesDir(null)?.absolutePath
+        if (savedResult == null || path == null) {
+            updateLogcat("保存失败 ${if (savedResult == null) "音频数据为空" else "路径为空"}")
+            return
+        }
+        val fileName = "output_${System.currentTimeMillis()}.wav"
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                saveWavFile(
+                    BV2Application.context,
+                    path,
+                    savedResult,
+                    fileName
+                )
+            }.onFailure {
+                Log.e("runVits", "saveWavFile error", it)
+            }.onSuccess {
+                Log.d("runVits", "saveWavFile success")
+                updateLogcat("保存成功, 路径为：${path.replace("/storage/emulated/0", "文件管理")} $fileName")
+            }
+        }
+    }
+
+    private fun updateEnableSavedBtnState(enable: Boolean, result: FloatArray? = null) {
+        val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
+        Log.d("updateEnableBtnState", "enable: $enable")
+        _uiState.tryEmit(sendState.copy(saveBtnEnabled = enable, savedResult = result))
+    }
+
     private fun startVoiceCheckingLoop(context: Context) {
         viewModelScope.launch(Dispatchers.Main.immediate) {
             while (true) {
                 val bv2Infer = vitsInferChannel.receive()
+                updateEnableSavedBtnState(false)
                 Log.d("runVits", "cleanedText start infer: $bv2Infer")
                 setLoading(true, "开始启动推理...")
                 val startTime = System.currentTimeMillis()
@@ -132,8 +163,9 @@ class VoiceViewModel : ViewModel() {
                 setLoading(false)
                 result ?: continue
                 soundHandler.sendSound(result)
+                updateEnableSavedBtnState(true, result)
 
-                // Save the result to a WAV file if in debug mode
+                // Auto Save the result to a WAV file if in debug mode
                 if (BuildConfig.DEBUG) {
                     launch(Dispatchers.IO) {
                         runCatching {
@@ -297,6 +329,8 @@ data class UIState(
     val currentLengthScale: Float = 1.0f,
     val characters: List<String> = emptyList(),
     val logcat: String = "",
+    val saveBtnEnabled: Boolean = false,
+    val savedResult: FloatArray? = null,
 )
 
 fun <T> CancellableContinuation<T>.safeResume(value: T) {
