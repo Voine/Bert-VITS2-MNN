@@ -467,7 +467,7 @@ class ToneSandhi(val jiebaJNI: CppJiebaJNI) {
             finals[1] = finals[1].dropLast(1) + "5"
         } else {
             for (i in word.indices) {
-                if (word[i] == '不' && i + 1 < finals.size && finals[i + 1].last() == '4') {
+                if (word[i] == '不' && i + 1 < finals.size && finals[i + 1].lastOrNull() == '4') {
                     finals[i] = finals[i].dropLast(1) + "2"
                 }
             }
@@ -615,7 +615,7 @@ class ToneSandhi(val jiebaJNI: CppJiebaJNI) {
         }
     }
 
-    private fun allToneThree(finals: List<String>): Boolean = finals.all { it.last() == '3' }
+    private fun allToneThree(finals: List<String>): Boolean = finals.all { it.lastOrNull() == '3' }
 
     /**
      * 分词接口，替代 Python jieba.cut_for_search
@@ -661,7 +661,7 @@ class ToneSandhi(val jiebaJNI: CppJiebaJNI) {
         val merged = mutableListOf<WordPos>()
         val used = BooleanArray(seg.size)
         for (i in seg.indices) {
-            if (i > 0 && pinyins[i - 1].last().last() == '3' && pinyins[i].first().last() == '3' && !used[i - 1]) {
+            if (i > 0 && pinyins[i - 1].last().lastOrNull() == '3' && pinyins[i].first().lastOrNull() == '3' && !used[i - 1]) {
                 val prev = merged[merged.lastIndex]
                 if (!isReduplication(prev.word) && prev.word.length + seg[i].word.length <= 3) {
                     val prev = merged.removeAt(merged.lastIndex)

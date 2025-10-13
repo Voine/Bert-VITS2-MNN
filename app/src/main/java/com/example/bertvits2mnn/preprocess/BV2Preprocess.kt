@@ -158,7 +158,7 @@ class BV2Preprocess(context: Context,
         pinyinToSymbolMap: Map<String, List<String>>
     ): Pair<List<String>, Int> {
         val normalized = normalizeSyllable(stripTone(pinyin))
-        val symbolList = pinyinToSymbolMap[normalized] ?: listOf("sil") // fallback
+        val symbolList = pinyinToSymbolMap[normalized] ?: listOf(",") // fallback
         return Pair(symbolList, tone)
     }
 
