@@ -2,6 +2,7 @@ package com.example.bertvits2mnn.preprocess
 import com.example.cppjieba.CppJiebaJNI
 import com.github.houbb.pinyin.constant.enums.PinyinStyleEnum
 import com.github.houbb.pinyin.util.PinyinHelper
+import kotlin.text.contains
 
 /**
  * Author: Voine
@@ -436,7 +437,6 @@ class ToneSandhi(val jiebaJNI: CppJiebaJNI) {
     private val mustNotNeuralToneWords: Set<String> = setOf(
         "男子", "女子", "分子", "原子", "量子", "莲子", "石子", "瓜子", "电子", "人人", "虎虎"
     )
-    private val punc = setOf<Char>('：', '，', '；', '。', '？', '！', '“', '”', '‘', '’', '\'', ':', ',', ';', '.', '?', '!', '"')
 
     /**
      * 主入口：按顺序应用预合并、不、“一”、神经、三声变调
@@ -496,7 +496,7 @@ class ToneSandhi(val jiebaJNI: CppJiebaJNI) {
                     val next = word[i + 1]
                     finals[i] = when {
                         finals[i + 1].last() == '4' -> finals[i].dropLast(1) + "2"
-                        next !in punc -> finals[i].dropLast(1) + "4"
+                        next.toString() !in punctuation -> finals[i].dropLast(1) + "4"
                         else -> finals[i]  // 遇到标点不变
                     }
                 }
@@ -736,19 +736,23 @@ class ToneSandhi(val jiebaJNI: CppJiebaJNI) {
      */
     private fun mergeBu(seg: List<WordPos>): List<WordPos> {
         val result = mutableListOf<WordPos>()
-        var last: WordPos? = null
-        for (current in seg) {
-            if (last?.word == "不") {
-                result.removeAt(result.lastIndex)
-                result.add(WordPos(last.word + current.word, current.pos))
-            } else {
-                result.add(current)
+
+        seg.forEachIndexed { i, pos ->
+            if (i == 0) {
+                result.add(pos)
+                return@forEachIndexed
             }
-            last = current
-        }
-        if (last?.word == "不") {
-            result.removeAt(result.lastIndex)
-            result.add(WordPos(last.word, "d"))
+            if (pos.word == "不") {
+                val lastInResult = result.lastOrNull()
+                if (lastInResult != null && lastInResult.word == "不") {
+                    result.removeAt(result.lastIndex)
+                    result.add(WordPos(lastInResult.word + pos.word, pos.pos))
+                } else {
+                    result.add(pos)
+                }
+            } else {
+                result.add(pos)
+            }
         }
         return result
     }
@@ -756,7 +760,7 @@ class ToneSandhi(val jiebaJNI: CppJiebaJNI) {
     fun jiebaSplitForSearch(word: String): List<String> = jiebaJNI.cut(word).toList()
 
     fun lazyPinyin(word: String): List<String> {
-        if (word.trim().length == 1 && punc.contains(word.trim().first())) {
+        if (word.trim().length == 1 && punctuation.contains(word.trim().first().toString())) {
             //标点符号直接返回
             return listOf(word.trim())
         }

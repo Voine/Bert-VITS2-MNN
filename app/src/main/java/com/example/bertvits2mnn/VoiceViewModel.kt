@@ -249,7 +249,7 @@ class VoiceViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val startTime = System.currentTimeMillis()
             val normalized = bV2Preprocess.normalizeText(showText)
-            val bertResult = bertTokenizer.encodeText(normalized)
+            val bertResult = processTextWithLetter(normalized)
             val g2pResult = bV2Preprocess.preprocessWithNormalizedText(normalized)
             val endTime = System.currentTimeMillis()
             Log.d("runVits", "cleanedText time: ${endTime - startTime} ms")
@@ -274,6 +274,12 @@ class VoiceViewModel : ViewModel() {
             //    assert len(word2ph) == len(text) + 2
             if (normalized.length + 2 != word2ph.size) {
                 updateLogcat("word2ph size error: ${word2ph.size}, text length: ${normalized.length}")
+                setLoading(false)
+                return@launch
+            }
+            if (bertResult.size != word2ph.size) {
+                updateLogcat("bertResult size error: ${bertResult.size}, word2ph size: ${word2ph.size}")
+                setLoading(false)
                 return@launch
             }
             vitsInferChannel.trySend(
@@ -287,6 +293,36 @@ class VoiceViewModel : ViewModel() {
                 )
             )
         }
+    }
+
+    private fun processTextWithLetter(text: String): IntArray {
+        val englishIndices = mutableListOf<Int>()
+        val nonEnglishBuilder = StringBuilder()
+        // 1. 记录英文字母索引，构建去除英文字母的新字符串
+        text.forEachIndexed { idx, c ->
+            if (c.isLetter() && ( c in 'A'..'Z' ||  c in 'a'..'z' )) {
+                englishIndices.add(idx)
+            } else {
+                nonEnglishBuilder.append(c)
+            }
+        }
+        val nonEnglishText = nonEnglishBuilder.toString()
+        // 2. 用 Bert tokenizer 编码
+        Log.d("processTextNonLetter", "text: $nonEnglishText")
+        val nonEnglishIds = bertTokenizer.encodeText(nonEnglishText)
+        // 3. 合成最终 input id list
+        val result = mutableListOf<Int>()
+        result.add(nonEnglishIds[0]) // addSpecialTokens=true 会在头尾增加特殊 id
+        var nonEnIdx = 1
+        for (i in text.indices) {
+            if (englishIndices.contains(i)) {
+                result.add(0) // 英文字母部分全部填 0
+            } else {
+                result.add(nonEnglishIds[nonEnIdx++])
+            }
+        }
+        result.add(nonEnglishIds.last())
+        return result.toIntArray()
     }
 
     private fun initCharacters(context: Context) {
