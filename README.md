@@ -117,7 +117,12 @@ git lfs track "*.mnn"
 
 1. 如果你需要替换自己的模型尝试验证，首先需要参考 [BertVITS2](https://github.com/fishaudio/Bert-VITS2) 内的说明进行训练得到桌面端模型，目前仅支持 2.3 版本，本工程基于的 BV2 代码 commit 为 13424595，如需自制模型，建议 BV2 代码版本保持一致。
 2. 将你的 pth 模型转换成 onnx, onnx 导出脚本在  [这里](https://github.com/fishaudio/Bert-VITS2/blob/master/export_onnx.py)
-3. 使用 [MNN Convert](https://mnn-docs.readthedocs.io/en/latest/tools/convert.html) 将所有模块的 onnx 模型转成 mnn
+3. 使用 [MNN Convert](https://mnn-docs.readthedocs.io/en/latest/tools/convert.html) 将所有模块的 onnx 模型转成 mnn, 转换命令参考：
+
+```bash
+./MNNConvert --modelFile your_path_to_onnx.onnx --MNNModel your_path_to_mnn.mnn --framework ONNX --bizCode MNN --weightQuantBits 8 --weightQuantAsymmetric
+```
+
 4. 放到 assets/bv2_model 内，如果你的模型名字有变化，则需要修改 VoiceViewModel.kt 内关于模型路径加载的部分。（硬编码字符串一时爽，一直硬编码一直爽）
 
 ---
