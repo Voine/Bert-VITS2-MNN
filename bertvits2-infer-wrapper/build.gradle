@@ -1,0 +1,37 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+}
+apply from: '../app_version.gradle'
+
+android {
+    namespace 'com.example.bertvits2_infer_wrapper'
+    compileSdk compileSdkVer
+    ndkVersion ndkVer
+
+    defaultConfig {
+        minSdk minSdkVer
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+
+dependencies {
+    api project(':text-preprocess') // just visible to IBertVITS2Preprocess.kt
+    implementation project(':bertvits2-jni')
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.gson
+}

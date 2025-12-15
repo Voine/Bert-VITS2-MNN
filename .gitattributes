@@ -1,2 +1,5 @@
-app/src/main/assets/*.mnn filter=lfs diff=lfs merge=lfs -text
-app/src/main/assets/assets/**/*.mnn filter=lfs diff=lfs merge=lfs -text
+bertvits2-jni/src/main/assets/bert/en/deberta-v3-large-distilled.mnn filter=lfs diff=lfs merge=lfs -text
+bertvits2-jni/src/main/assets/bv2_model/** filter=lfs diff=lfs merge=lfs -text
+openjtalk/src/main/assets/open_jtalk_dic_utf_8-1.11/sys.dic filter=lfs diff=lfs merge=lfs -text
+bertvits2-jni/src/main/assets/bert/jp/deberta-v2-large-japanese-char-wwm-distilled.mnn filter=lfs diff=lfs merge=lfs -text
+bertvits2-jni/src/main/assets/bert/zh/chinese-roberta-wwm-ext-large-distilled-fp16.mnn filter=lfs diff=lfs merge=lfs -text

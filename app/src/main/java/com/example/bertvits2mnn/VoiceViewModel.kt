@@ -1,32 +1,16 @@
 package com.example.bertvits2mnn
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bertvits2.BertVITS2JNI
-import com.example.bertvits2mnn.preprocess.BV2Preprocess
-import com.example.bertvits2mnn.preprocess.intersperse
-import com.example.bertvits2mnn.preprocess.zhSymbolsMap
-import com.example.bertvits2mnn.utils.copyAssets2Local
+import com.example.bertvits2_infer_wrapper.impl.BertVITS2SimpleInferImpl
+import com.example.bertvits2_infer_wrapper.interfaces.IBertVITS2SimpleInfer
 import com.example.bertvits2mnn.utils.saveWavFile
-import com.example.cpptokenizer.CppTokenizerJNI
-import com.google.gson.Gson
-import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
-import java.io.File
-import kotlin.collections.toIntArray
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
 
 /**
  * Author: Voine
@@ -40,41 +24,27 @@ class VoiceViewModel : ViewModel() {
     private val soundHandler: SoundPlayHandler by lazy {
         SoundPlayHandler()
     }
-    private val vitsInferChannel by lazy {
-        Channel<BV2InferBean>(capacity = Int.MAX_VALUE, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    }
 
     @Volatile
-    private var currentSpkId = 0
+    private var currentSpkName: String = ""
 
     private lateinit var speakers: List<String>
+    private val bv2SimpleInferImpl: IBertVITS2SimpleInfer by lazy {
+        BertVITS2SimpleInferImpl(BV2Application.context)
+    }
+    private var firstInferDone: Boolean = false
 
-    private lateinit var bertVITS2: BertVITS2JNI
-
-    private lateinit var bV2Preprocess: BV2Preprocess
-
-    private lateinit var bertTokenizer: CppTokenizerJNI
-
-    fun init(context: Context) {
+    fun init() {
         setLoading(true, "正在初始化...")
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Default) {
             val startTime = System.currentTimeMillis()
-            setLoading(true, "正在移动模型...")
-            var absPath = initModel(context)
-
             setLoading(true, "正在初始化 VITS...")
-            initVits(absPath)
-            initCharacters(context)
-
-            setLoading(true, "正在初始化中文分词引擎...")
-            initPreprocess(context)
-
+            bv2SimpleInferImpl.init()
+            initCharacters()
             setDefaultState()
             val endTime = System.currentTimeMillis()
             Log.d("init", "init time: ${endTime - startTime} ms")
             updateLogcat("初始化耗时: ${endTime - startTime} ms")
-
-            startVoiceCheckingLoop(context)
             setLoading(false)
         }
     }
@@ -86,15 +56,57 @@ class VoiceViewModel : ViewModel() {
     }
 
     fun startAudioInference(text: String) {
-        runVits(text.trim())
+        viewModelScope.launch(Dispatchers.Default) {
+            updateEnableSavedBtnState(false)
+            Log.d("runVits", "cleanedText start infer: $text")
+            if (!firstInferDone) {
+                firstInferDone = true
+                setLoading(true, "开始启动推理...首次推理时间较长")
+            } else {
+                setLoading(true, "开始启动推理...")
+            }
+            val startTime = System.currentTimeMillis()
+            val (result, sampleRate) = bv2SimpleInferImpl.infer(text, currentSpkName) ?: return@launch
+            val endTime = System.currentTimeMillis()
+            updateLogcat("推理耗时: ${endTime - startTime} ms")
+            Log.d("runVits", "result: ${result?.joinToString(",", limit = 10)}")
+            Log.d("runVits", "infer time: ${endTime - startTime} ms")
+            setLoading(false)
+            result ?: return@launch
+            soundHandler.sendSound(result, sampleRate)
+            updateEnableSavedBtnState(true, result.toList())
+            // Auto Save the result to a WAV file if in debug mode
+            if (BuildConfig.DEBUG) {
+                launch(Dispatchers.IO) {
+                    runCatching {
+                        saveWavFile(
+                            BV2Application.context,
+                            BV2Application.context.filesDir.absolutePath,
+                            result,
+                            "output_${System.currentTimeMillis()}.wav"
+                        )
+                    }.onFailure {
+                        Log.e("runVits", "saveWavFile error: ${it.message}")
+                    }
+                }
+            }
+        }
     }
 
     fun selectCharacter(string: String) {
         val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
         Log.d("selectCharacter", "string: $string")
         updateLogcat("选择角色: $string")
+        val currentCharacter = sendState.selectedCharacter
+        if (getDefaultTextFromSpeaker(currentCharacter) == sendState.inputText) {
+            // If the input text is the default text of the previous character, update it to the new character's default text
+            val newDefaultText = getDefaultTextFromSpeaker(string)
+            _uiState.tryEmit(sendState.copy(selectedCharacter = string, inputText = newDefaultText))
+            currentSpkName = string
+            return
+        }
         _uiState.tryEmit(sendState.copy(selectedCharacter = string))
-        currentSpkId = speakers.indexOf(string)
+        currentSpkName = string
     }
 
 
@@ -103,7 +115,7 @@ class VoiceViewModel : ViewModel() {
         updateLogcat("语音缩放系数: $lengthScale")
         val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
         _uiState.tryEmit(sendState.copy(currentLengthScale = lengthScale))
-        bertVITS2.setAudioLengthScale(lengthScale)
+        bv2SimpleInferImpl.setAudioLengthScale(lengthScale)
     }
 
     fun saveLocal(savedResult: FloatArray?) {
@@ -130,218 +142,47 @@ class VoiceViewModel : ViewModel() {
         }
     }
 
-    private fun updateEnableSavedBtnState(enable: Boolean, result: FloatArray? = null) {
+    private fun updateEnableSavedBtnState(enable: Boolean, result: List<Float>? = null) {
         val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
         Log.d("updateEnableBtnState", "enable: $enable")
         _uiState.tryEmit(sendState.copy(saveBtnEnabled = enable, savedResult = result))
     }
 
-    private fun startVoiceCheckingLoop(context: Context) {
-        viewModelScope.launch(Dispatchers.Main.immediate) {
-            while (true) {
-                val bv2Infer = vitsInferChannel.receive()
-                updateEnableSavedBtnState(false)
-                Log.d("runVits", "cleanedText start infer: $bv2Infer")
-                setLoading(true, "开始启动推理...")
-                val startTime = System.currentTimeMillis()
-
-                val result: FloatArray? = withContext(Dispatchers.Default) {
-                    bertVITS2.startAudioInfer(
-                        input_seq = bv2Infer.input_seq,
-                        input_t = bv2Infer.input_t,
-                        input_language = bv2Infer.input_language,
-                        input_ids = bv2Infer.input_ids,
-                        input_word2ph = bv2Infer.word2ph,
-                        attention_mask = bv2Infer.attention_mask,
-                        spkid = currentSpkId
-                    )
-                }
-                val endTime = System.currentTimeMillis()
-                updateLogcat("推理耗时: ${endTime - startTime} ms")
-                Log.d("runVits", "result: ${result?.joinToString(",", limit = 10)}")
-                Log.d("runVits", "infer time: ${endTime - startTime} ms")
-                setLoading(false)
-                result ?: continue
-                soundHandler.sendSound(result)
-                updateEnableSavedBtnState(true, result)
-
-                // Auto Save the result to a WAV file if in debug mode
-                if (BuildConfig.DEBUG) {
-                    launch(Dispatchers.IO) {
-                        runCatching {
-                            saveWavFile(
-                                context,
-                                context.filesDir.absolutePath,
-                                result,
-                                "output_${System.currentTimeMillis()}.wav"
-                            )
-                        }.onFailure {
-                            Log.e("runVits", "saveWavFile error: ${it.message}")
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private suspend fun initModel(context: Context): String {
-        return suspendCancellableCoroutine {
-            context.copyAssets2Local(
-                true,
-                "assets",
-                context.filesDir.absolutePath
-            ) { isSuccess: Boolean, absPath: String ->
-                Log.d("copyAssets2Local", "isSuccess: $isSuccess, absPath: $absPath")
-                it.safeResume(absPath)
-            }
-        }
-    }
-
-    private fun initPreprocess(context: Context) {
-        bV2Preprocess = BV2Preprocess(
-            context,
-            jieba_dict = "${context.filesDir.absolutePath}/assets/preprocess/dict/jieba.dict.utf8",
-            jieba_hmm = "${context.filesDir.absolutePath}/assets/preprocess/dict/hmm_model.utf8",
-            jieba_user = "${context.filesDir.absolutePath}/assets/preprocess/dict/user.dict.utf8",
-            jieba_idf = "${context.filesDir.absolutePath}/assets/preprocess/dict/idf.utf8",
-            jieba_stop = "${context.filesDir.absolutePath}/assets/preprocess/dict/stop_words.utf8",
-            opencpop_strict_path = "assets/preprocess/opencpop-strict.txt"
-        )
-        bertTokenizer = CppTokenizerJNI()
-        bertTokenizer.initTokenizer("${context.filesDir.absolutePath}/assets/bert/tokenizer.json")
-    }
-
     private fun setDefaultState() {
         val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
         Log.d("setDefaultState", "sendState: $sendState")
+        currentSpkName = speakers[0]
         _uiState.tryEmit(
             sendState.copy
                 (
-                inputText = "旅行者，好久不见",
+                inputText = getDefaultTextFromSpeaker(speakers[0]),
                 selectedCharacter = speakers[0]
             )
         )
     }
 
-    private fun initVits(absPath: String) {
-        val encPath = File(absPath, "assets/bv2_model/bert_vits23_enc_genshin_arknights_fp16.mnn").absolutePath
-        val decPath = File(absPath, "assets/bv2_model/bert_vits23_dec_genshin_arknights_fp16.mnn").absolutePath
-        val flowPath = File(absPath, "assets/bv2_model/bert_vits23_flow_genshin_arknights_fp16.mnn").absolutePath
-        val embPath = File(absPath, "assets/bv2_model/bert_vits23_emb_genshin_arknights_fp16.mnn").absolutePath
-        val dpPath = File(absPath, "assets/bv2_model/bert_vits23_dp_genshin_arknights_fp16.mnn").absolutePath
-        val sdpPath = File(absPath, "assets/bv2_model/bert_vits23_sdp_genshin_arknights_fp16.mnn").absolutePath
-        val bertPath = File(absPath, "assets/bert/chinese-roberta-wwm-ext-large-distilled-fp16.mnn").absolutePath
-        bertVITS2 = BertVITS2JNI()
-        bertVITS2.initBertVITS2Loader()
-        bertVITS2.setBertVITS2ModelPath(
-            enc_model_path = encPath,
-            dec_model_path = decPath,
-            sdp_model_path = sdpPath,
-            dp_model_path = dpPath,
-            emb_model_path = embPath,
-            flow_model_path = flowPath,
-            bert_model_path = bertPath
-        )
-    }
-
-    private fun runVits(showText: String = "你好") {
-        setLoading(true, "开始转义文本...")
-        viewModelScope.launch(Dispatchers.IO) {
-            val startTime = System.currentTimeMillis()
-            val normalized = bV2Preprocess.normalizeText(showText)
-            val bertResult = processTextWithLetter(normalized)
-            val g2pResult = bV2Preprocess.preprocessWithNormalizedText(normalized)
-            val endTime = System.currentTimeMillis()
-            Log.d("runVits", "cleanedText time: ${endTime - startTime} ms")
-            updateLogcat("文本预处理: ${endTime - startTime} ms")
-            var phones = g2pResult.phones.mapNotNull { zhSymbolsMap[it] }
-            var tones = g2pResult.tones
-            var langIds = List(phones.size) { 0 }
-
-            if (phones.size != tones.size) {
-                Log.e("runVits", "phones size error: ${phones.size}, tones size: ${tones.size}")
-                updateLogcat("处理失败：phones size error: ${phones.size}\ntones size: ${tones.size}\ntext: $showText")
-                return@launch
-            }
-
-            //add blank
-            phones = intersperse(phones, 0)
-            tones = intersperse(tones, 0)
-            langIds = intersperse(langIds, 0)
-            val word2ph = g2pResult.word2ph.map { it * 2 }.toMutableList()
-            word2ph[0] += 1
-
-            //    assert len(word2ph) == len(text) + 2
-            if (normalized.length + 2 != word2ph.size) {
-                updateLogcat("word2ph size error: ${word2ph.size}, text length: ${normalized.length}")
-                setLoading(false)
-                return@launch
-            }
-            if (bertResult.size != word2ph.size) {
-                updateLogcat("bertResult size error: ${bertResult.size}, word2ph size: ${word2ph.size}")
-                setLoading(false)
-                return@launch
-            }
-            vitsInferChannel.trySend(
-                BV2InferBean(
-                    input_seq = phones.toIntArray(),
-                    input_t = tones.toIntArray(),
-                    input_language = langIds.toIntArray(),
-                    word2ph = word2ph.toIntArray(),
-                    input_ids = bertResult,
-                    attention_mask = IntArray(bertResult.size) { 1 },
-                )
-            )
+    private fun getDefaultTextFromSpeaker(speaker: String): String {
+        return when (speaker) {
+            "陈_ZH" -> "博士，欢迎来到龙门。"
+            "珐露珊_ZH",
+            "甘雨_ZH" -> "旅行者，好久不见。"
+            "APPLe_EN" -> "Greetings, madam. I am here. Clouds help predict the weather."
+            "Sonetto_EN" -> "Timekeeper, at your service. The stars shine bright tonight."
+            "Vertin_EN" -> "The storm is coming. We must prepare ourselves."
+            "八重神子_JP",
+            "宵宫_JP",
+            "椿_JP" -> "こんにちは、皆さん。今日は素晴らしい一日ですね。"
+            "野兽先辈_JP" -> "にじゅうよんさいはがくせいです"
+            "22娘_MIX" -> "RTX 5090 将于明年发布，敬请期待！"
+            else -> "你好，欢迎使用语音合成系统。"
         }
     }
 
-    private fun processTextWithLetter(text: String): IntArray {
-        val englishIndices = mutableListOf<Int>()
-        val nonEnglishBuilder = StringBuilder()
-        // 1. 记录英文字母索引，构建去除英文字母的新字符串
-        text.forEachIndexed { idx, c ->
-            if (c.isLetter() && ( c in 'A'..'Z' ||  c in 'a'..'z' )) {
-                englishIndices.add(idx)
-            } else {
-                nonEnglishBuilder.append(c)
-            }
-        }
-        val nonEnglishText = nonEnglishBuilder.toString()
-        // 2. 用 Bert tokenizer 编码
-        Log.d("processTextNonLetter", "text: $nonEnglishText")
-        val nonEnglishIds = bertTokenizer.encodeText(nonEnglishText)
-        // 3. 合成最终 input id list
-        val result = mutableListOf<Int>()
-        result.add(nonEnglishIds[0]) // addSpecialTokens=true 会在头尾增加特殊 id
-        var nonEnIdx = 1
-        for (i in text.indices) {
-            if (englishIndices.contains(i)) {
-                result.add(0) // 英文字母部分全部填 0
-            } else {
-                result.add(nonEnglishIds[nonEnIdx++])
-            }
-        }
-        result.add(nonEnglishIds.last())
-        return result.toIntArray()
-    }
-
-    private fun initCharacters(context: Context) {
-        val configJson = File("${context.filesDir.absolutePath}/assets/bv2_model/config.json")
-        val gson = Gson()
-        // 先将整体转为 JsonObject
-        val root = gson.fromJson(configJson.readText(), JsonObject::class.java);
-        // 提取 spk2id 部分
-        val spk2idJson = root
-            .getAsJsonObject("data")
-            .getAsJsonObject("spk2id");
-        // 转为 Map<String, Integer>
-        val type = object : TypeToken<Map<String, Int>>() {}.type
-        val spk2idMap: Map<String, Int> = gson.fromJson(spk2idJson, type)
-        this.speakers = spk2idMap.keys.toList()
+    private fun initCharacters() {
+        this.speakers = bv2SimpleInferImpl.getSpkNameList()
         val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
         _uiState.tryEmit(sendState.copy(characters = speakers))
     }
-
 
     private fun setLoading(loading: Boolean, hint: String = "") {
         Log.d("setLoading", "loading: $loading, hint: $hint")
@@ -355,6 +196,11 @@ class VoiceViewModel : ViewModel() {
         val currentLogcat = sendState.logcat
         _uiState.tryEmit(sendState.copy(logcat = "$currentLogcat\n$logcat"))
     }
+
+    override fun onCleared() {
+        bv2SimpleInferImpl.release()
+        super.onCleared()
+    }
 }
 
 data class UIState(
@@ -366,48 +212,5 @@ data class UIState(
     val characters: List<String> = emptyList(),
     val logcat: String = "",
     val saveBtnEnabled: Boolean = false,
-    val savedResult: FloatArray? = null,
+    val savedResult: List<Float>? = null,
 )
-
-fun <T> CancellableContinuation<T>.safeResume(value: T) {
-    if (this.isActive) {
-        (this as? Continuation<T>)?.resume(value)
-    }
-}
-
-data class BV2InferBean(
-    val input_seq: IntArray,
-    val input_t: IntArray,
-    val input_language: IntArray,
-    val word2ph: IntArray,
-    //for bert use
-    val input_ids: IntArray,
-    val attention_mask: IntArray,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as BV2InferBean
-
-        if (!input_seq.contentEquals(other.input_seq)) return false
-        if (!input_t.contentEquals(other.input_t)) return false
-        if (!input_language.contentEquals(other.input_language)) return false
-        if (!input_ids.contentEquals(other.input_ids)) return false
-        if (!word2ph.contentEquals(other.word2ph)) return false
-        if (!attention_mask.contentEquals(other.attention_mask)) return false
-
-        return true
-    }
-
-    // IDE 补全...看不懂啥意思
-    override fun hashCode(): Int {
-        var result = input_seq.contentHashCode()
-        result = 31 * result + input_t.contentHashCode()
-        result = 31 * result + input_language.contentHashCode()
-        result = 31 * result + input_ids.contentHashCode()
-        result = 31 * result + word2ph.contentHashCode()
-        result = 31 * result + attention_mask.contentHashCode()
-        return result
-    }
-}

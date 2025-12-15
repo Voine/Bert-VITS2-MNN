@@ -21,6 +21,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "BertVits2MNN"
 include ':app'
-include ':bertvits2'
+include ':bertvits2-jni'
 include ':cppjieba'
 include ':cpptokenizer'
+include ':openjtalk'
+include ':text-preprocess'
+include ':bertvits2-infer-wrapper'

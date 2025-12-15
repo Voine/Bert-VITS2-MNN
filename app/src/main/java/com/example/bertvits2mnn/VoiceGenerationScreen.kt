@@ -26,6 +26,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
+// 内置预设文案列表
+private val presetTexts = listOf(
+    "博士，欢迎来到龙门。",
+    "旅行者，好久不见。",
+    "你好，欢迎使用语音合成系统。",
+    "欢迎舰长进入直播间，感谢舰长送上的礼物",
+    "Greetings, madam. I am here. Clouds help predict the weather.",
+    "Timekeeper, at your service. The stars shine bright tonight.",
+    "The storm is coming. We must prepare ourselves.",
+    "今天天气真好，we should go outside and enjoy the sunshine.",
+    "这个project的deadline是下周五，大家加油。",
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
@@ -53,13 +66,52 @@ fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
             verticalArrangement = Arrangement.Top
         ) {
             Spacer(modifier = Modifier.height(56.dp))
-            // 文本输入框
-            OutlinedTextField(
-                value = inputText,
-                onValueChange = { newText -> viewModel.updateInputText(newText) },
-                label = { Text("输入合成文本") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // 文本输入框 + 预设文案下拉选择
+            var presetExpanded by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                OutlinedTextField(
+                    value = inputText,
+                    onValueChange = { newText -> viewModel.updateInputText(newText) },
+                    label = { Text("输入合成文本") },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Box {
+                    IconButton(
+                        onClick = { presetExpanded = true },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text("▼", fontSize = 18.sp)
+                    }
+                    DropdownMenu(
+                        expanded = presetExpanded,
+                        onDismissRequest = { presetExpanded = false },
+                        modifier = Modifier
+                            .widthIn(max = 300.dp)
+                            .heightIn(max = 350.dp)
+                    ) {
+                        presetTexts.forEach { text ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = text,
+                                        maxLines = 2,
+                                        fontSize = 14.sp
+                                    )
+                                },
+                                onClick = {
+                                    viewModel.updateInputText(text)
+                                    presetExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -100,7 +152,7 @@ fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
                     enabled = saveBtnEnabled,
                     onClick = {
                         keyboardController?.hide()
-                        viewModel.saveLocal(uiState.savedResult)
+                        viewModel.saveLocal(uiState.savedResult?.toFloatArray())
                     },
                     modifier = Modifier.fillMaxWidth().weight(1f)
                 ) {

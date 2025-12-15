@@ -3,17 +3,19 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+apply from: '../app_version.gradle'
 
 android {
     namespace 'com.example.bertvits2mnn'
-    compileSdk 35
+    compileSdk compileSdkVer
 
     defaultConfig {
         applicationId "com.example.bertvits2mnn"
-        minSdk 24
-        targetSdk 35
-        versionCode 6
-        versionName "1.0.5"
+        minSdk minSdkVer
+        targetSdk targetSdkVer
+        versionCode versionCodeExt
+        versionName versionNameExt
+        ndkVersion ndkVer
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk {
@@ -41,9 +43,7 @@ android {
 }
 
 dependencies {
-    implementation project(':bertvits2')
-    implementation project(':cppjieba')
-    implementation project(':cpptokenizer')
+    implementation project(':bertvits2-infer-wrapper')
     implementation libs.androidx.core.ktx
     implementation platform(libs.androidx.compose.bom)
     implementation libs.androidx.lifecycle.runtime.ktx
@@ -57,8 +57,6 @@ dependencies {
     implementation libs.androidx.ui.tooling.preview
     implementation libs.androidx.ui.tooling
     implementation libs.androidx.material3
-    implementation libs.gson
-    implementation libs.pinyin
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit

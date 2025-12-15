@@ -23,6 +23,14 @@ set_target_properties(tokenizers_rust_c
         ${TOKENIZER_RUST_C_LIB_DIR}
 )
 
+add_library(tokenizers_sentence_piece_c STATIC IMPORTED)
+set(TOKENIZER_SENTENCE_PIECE_C_LIB_DIR "${CMAKE_CURRENT_LIST_DIR}/../jniStaticLibs/${ANDROID_ABI}/libsentencepiece.a")
+set_target_properties(tokenizers_sentence_piece_c
+        PROPERTIES
+        IMPORTED_LOCATION
+        ${TOKENIZER_SENTENCE_PIECE_C_LIB_DIR}
+)
+
 set(tokenizer_path "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/tokenizers-cpp")
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${tokenizer_path}/include)
 target_link_libraries(${CMAKE_PROJECT_NAME}
@@ -31,4 +39,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         log
         tokenizers_rust_cpp
         tokenizers_rust_c
+        tokenizers_sentence_piece_c
 )
