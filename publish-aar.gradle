@@ -1,0 +1,70 @@
+/**
+ * 通用 AAR 发布脚本：apply 到每个 Android library 模块即可。
+ *
+ * 用法（在模块 build.gradle 末尾）：
+ *   apply from: "$rootDir/publish-aar.gradle"
+ *
+ * 默认产物坐标：
+ *   group:    com.example.bertvits2mnn
+ *   artifact: <模块名>            （可在模块里通过 ext.publishArtifactId 覆盖）
+ *   version:  <versionNameExt>     （app_version.gradle）
+ *
+ * 输出：
+ *   - 本地 Maven 仓库：<rootDir>/build/repo
+ *   - 集中收集的 AAR ：<rootDir>/build/aars
+ */
+
+apply plugin: 'maven-publish'
+
+ext.publishGroupId    = project.findProperty('publishGroupId') ?: 'com.example.bertvits2mnn'
+ext.publishArtifactId = project.findProperty('publishArtifactId') ?: project.name
+ext.publishVersion    = project.findProperty('publishVersion') ?:
+        (project.hasProperty('versionNameExt') ? project.versionNameExt : '1.0.0')
+
+// 设置 project 级 group / version，使 components.release 在生成 POM 时
+// 能正确解析对其它子模块的 project() 依赖坐标（其它模块也用同样的 group）。
+group   = project.ext.publishGroupId
+version = project.ext.publishVersion
+
+// AGP 7+ 必须显式声明可发布的 variant，否则不会生成 components.release
+android {
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId    = project.ext.publishGroupId
+                artifactId = project.ext.publishArtifactId
+                version    = project.ext.publishVersion
+
+                pom {
+                    name        = project.ext.publishArtifactId
+                    description = "Bert-VITS2-MNN module: ${project.ext.publishArtifactId}"
+                }
+            }
+        }
+        repositories {
+            maven {
+                name = "LocalRepo"
+                url  = uri("${rootProject.buildDir}/repo")
+            }
+        }
+    }
+
+    tasks.register("collectAar", Copy) {
+        dependsOn "assembleRelease"
+        from("$buildDir/outputs/aar") {
+            include "*.aar"
+            rename { "${project.ext.publishArtifactId}-${project.ext.publishVersion}.aar" }
+        }
+        into("${rootProject.buildDir}/aars")
+    }
+}

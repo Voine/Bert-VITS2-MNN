@@ -1,7 +1,45 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.android.library) apply false
+}
+
+/* ---------------------------------------------------------------------------
+ * AAR 发布聚合任务
+ * 用法：
+ *   ./gradlew publishAars        把所有 library AAR 发布到 build/repo（本地 Maven）
+ *   ./gradlew collectAars        把所有 release AAR 复制到 build/aars
+ *   ./gradlew assembleReleaseAll 仅装配所有模块的 release AAR
+ *
+ * 自定义坐标可加 -P 参数（对所有模块生效）：
+ *   -PpublishGroupId=com.your.group
+ *   -PpublishVersion=1.2.3
+ * --------------------------------------------------------------------------- */
+def publishableModules = [
+    ':cppjieba',
+    ':cpptokenizer',
+    ':openjtalk',
+    ':bertvits2-jni',
+    ':text-preprocess',
+    ':bertvits2-infer-wrapper',
+]
+
+tasks.register('publishAars') {
+    group = 'publishing'
+    description = '将所有 library 模块发布到本地 Maven 仓库 build/repo'
+    dependsOn publishableModules.collect { "${it}:publishReleasePublicationToLocalRepoRepository" }
+}
+
+tasks.register('collectAars') {
+    group = 'publishing'
+    description = '将所有 release AAR 收集到 build/aars'
+    dependsOn publishableModules.collect { "${it}:collectAar" }
+}
+
+tasks.register('assembleReleaseAll') {
+    group = 'build'
+    description = '装配所有 library 模块的 release AAR'
+    dependsOn publishableModules.collect { "${it}:assembleRelease" }
 }

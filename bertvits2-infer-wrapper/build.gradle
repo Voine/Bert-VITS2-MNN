@@ -35,3 +35,5 @@ dependencies {
     implementation libs.androidx.appcompat
     implementation libs.gson
 }
+
+apply from: "$rootDir/publish-aar.gradle"
