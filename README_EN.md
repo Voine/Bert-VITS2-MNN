@@ -39,21 +39,19 @@ Waveform output (.wav)
 
 The speakers bundled in the demo app are listed below. The full list lives in [`VoiceViewModel.kt`](app/src/main/java/com/example/bertvits2mnn/VoiceViewModel.kt). Chinese speakers are trained on public voice sets from Arknights and [Genshin Impact](https://www.bilibili.com/opus/804258696892776484); Japanese / English speakers come from the public voice sets of their respective games.
 
-| Character    | Language     | Sample Rate | Text                                                          | Audio |
-|--------------|--------------|-------------|---------------------------------------------------------------|-------|
-| Ch'en        | Chinese      | 44100 Hz    | 博士，当初在龙门，我不该放你走的。                              | 🔊 [Play](https://github.com/user-attachments/assets/a6fc4022-e473-41e3-89da-0f5c9741a4c4) |
-| Faruzan      | Chinese      | 44100 Hz    | 旅行者，好久不见。                                              | 🔊 [Play](https://github.com/user-attachments/assets/60a96546-1e18-43b8-9a6a-3c9bfd5eca42) |
-| Ganyu        | Chinese      | 44100 Hz    | 工作还没有做完，又要开始搬砖了。                                | 🔊 [Play](https://github.com/user-attachments/assets/7482e892-630f-47ee-829f-336ceb9525c4) |
-| 22 Niang     | ZH + EN mix  | 22050 Hz    | RTX 5090 将于明年发布，敬请期待！                               | 🔊 [Play](TODO_LINK) |
-| APPLe        | English      | 44100 Hz    | Greetings, madam. I am here. Clouds help predict the weather. | 🔊 [Play](TODO_LINK) |
-| Sonetto      | English      | 44100 Hz    | Timekeeper, at your service. The stars shine bright tonight.  | 🔊 [Play](TODO_LINK) |
-| Vertin       | English      | 44100 Hz    | The storm is coming. We must prepare ourselves.               | 🔊 [Play](TODO_LINK) |
-| Yae Miko     | Japanese     | 44100 Hz    | こんにちは、皆さん。今日は素晴らしい一日ですね。                | 🔊 [Play](TODO_LINK) |
-| Yoimiya      | Japanese     | 44100 Hz    | こんにちは、皆さん。今日は素晴らしい一日ですね。                | 🔊 [Play](TODO_LINK) |
-| Tsubaki      | Japanese     | 44100 Hz    | こんにちは、皆さん。今日は素晴らしい一日ですね。                | 🔊 [Play](TODO_LINK) |
-| Yajuu Senpai | Japanese     | 44100 Hz    | にじゅうよんさいはがくせいです                                  | 🔊 [Play](TODO_LINK) |
-
-> The `TODO_LINK` placeholders will be filled in later.
+| Character | Language | Sample Rate | Text                                                          | Audio |
+|-----|----------|-------------|---------------------------------------------------------------|-------|
+| Ch'en | Chinese     | 44100 Hz    | 博士，当初在龙门，我不该放你走的。                              | 🔊 [Play](https://github.com/user-attachments/assets/a6fc4022-e473-41e3-89da-0f5c9741a4c4) |
+| Faruzan | Chinese     | 44100 Hz    | 旅行者，好久不见。                                              | 🔊 [Play](https://github.com/user-attachments/assets/60a96546-1e18-43b8-9a6a-3c9bfd5eca42) |
+| Ganyu | Chinese     | 44100 Hz    | 工作还没有做完，又要开始搬砖了。                                | 🔊 [Play](https://github.com/user-attachments/assets/7482e892-630f-47ee-829f-336ceb9525c4) |
+| 22  | ZH + EN mix  | 22050 Hz    | RTX 5090 将于明年发布，敬请期待！                               | 🔊 [Play](https://github.com/user-attachments/assets/fd6cc25c-79ca-42fc-a60a-352d8f99e437) |
+| APPLe | English     | 44100 Hz    | Greetings, madam. I am here. Clouds help predict the weather. | 🔊 [Play](https://github.com/user-attachments/assets/7d513650-e4ab-4449-b2be-d8a49cb3c7fc) |
+| Sonetto | English     | 44100 Hz    | Timekeeper, at your service. The stars shine bright tonight.  | 🔊 [Play](https://github.com/user-attachments/assets/fe55763b-5b84-4e19-9960-4e7d2047cb54) |
+| Vertin | English     | 44100 Hz    | The storm is coming. We must prepare ourselves.               | 🔊 [Play](https://github.com/user-attachments/assets/b0238546-80b8-422e-ab9e-ed4940cba2e1) |
+| Yae Miko | Japanese     | 44100 Hz    | たびびと、きょうはどんなおもしろいほんをもってきてくれたの？もしないようがつまらなかったら、わたし、へんしゅうぶに『しげき』にいこうかな～？               | 🔊 [Play](https://github.com/user-attachments/assets/5032b809-f963-415b-8a93-d97644f725cc) |
+| Yoimiya  | Japanese     | 44100 Hz    | こんにちは、皆さん。今日は素晴らしい一日ですね。                | 🔊 [Play](https://github.com/user-attachments/assets/f2fb34e2-fb2d-4e8a-8c95-4555f0adf9aa) |
+| Tsubaki   | Japanese     | 44100 Hz    | あなたといると、なぜか落ち着くの。              | 🔊 [Play](https://github.com/user-attachments/assets/2e2a6951-a435-4a0c-a9a3-23241c42049c) |
+| Yajuu Senpai | Japanese     | 44100 Hz    | にじゅうよんさいはがくせいです                                  | 🔊 [Play](https://github.com/user-attachments/assets/ea56d3e1-4de4-43c9-ba18-ec48d9e3504d) |
 
 ---
 

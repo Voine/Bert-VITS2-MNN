@@ -44,16 +44,15 @@ Waveform output (.wav)
 | 陈        | 中文     | 44100 Hz    | 博士，当初在龙门，我不该放你走的。                              | 🔊 [Play](https://github.com/user-attachments/assets/a6fc4022-e473-41e3-89da-0f5c9741a4c4) |
 | 珐露珊    | 中文     | 44100 Hz    | 旅行者，好久不见。                                              | 🔊 [Play](https://github.com/user-attachments/assets/60a96546-1e18-43b8-9a6a-3c9bfd5eca42) |
 | 甘雨      | 中文     | 44100 Hz    | 工作还没有做完，又要开始搬砖了。                                | 🔊 [Play](https://github.com/user-attachments/assets/7482e892-630f-47ee-829f-336ceb9525c4) |
-| 22娘      | 中英混合 | 22050 Hz    | RTX 5090 将于明年发布，敬请期待！                               | 🔊 [Play](TODO_LINK) |
-| APPLe     | 英文     | 44100 Hz    | Greetings, madam. I am here. Clouds help predict the weather. | 🔊 [Play](TODO_LINK) |
-| Sonetto   | 英文     | 44100 Hz    | Timekeeper, at your service. The stars shine bright tonight.  | 🔊 [Play](TODO_LINK) |
-| Vertin    | 英文     | 44100 Hz    | The storm is coming. We must prepare ourselves.               | 🔊 [Play](TODO_LINK) |
-| 八重神子  | 日文     | 44100 Hz    | こんにちは、皆さん。今日は素晴らしい一日ですね。                | 🔊 [Play](TODO_LINK) |
-| 宵宫      | 日文     | 44100 Hz    | こんにちは、皆さん。今日は素晴らしい一日ですね。                | 🔊 [Play](TODO_LINK) |
-| 椿        | 日文     | 44100 Hz    | こんにちは、皆さん。今日は素晴らしい一日ですね。                | 🔊 [Play](TODO_LINK) |
-| 野兽先辈  | 日文     | 44100 Hz    | にじゅうよんさいはがくせいです                                  | 🔊 [Play](TODO_LINK) |
+| 22娘      | 中英混合 | 22050 Hz    | RTX 5090 将于明年发布，敬请期待！                               | 🔊 [Play](https://github.com/user-attachments/assets/fd6cc25c-79ca-42fc-a60a-352d8f99e437) |
+| APPLe     | 英文     | 44100 Hz    | Greetings, madam. I am here. Clouds help predict the weather. | 🔊 [Play](https://github.com/user-attachments/assets/7d513650-e4ab-4449-b2be-d8a49cb3c7fc) |
+| Sonetto   | 英文     | 44100 Hz    | Timekeeper, at your service. The stars shine bright tonight.  | 🔊 [Play](https://github.com/user-attachments/assets/fe55763b-5b84-4e19-9960-4e7d2047cb54) |
+| Vertin    | 英文     | 44100 Hz    | The storm is coming. We must prepare ourselves.               | 🔊 [Play](https://github.com/user-attachments/assets/b0238546-80b8-422e-ab9e-ed4940cba2e1) |
+| 八重神子  | 日文     | 44100 Hz    | たびびと、きょうはどんなおもしろいほんをもってきてくれたの？もしないようがつまらなかったら、わたし、へんしゅうぶに『しげき』にいこうかな～？               | 🔊 [Play](https://github.com/user-attachments/assets/5032b809-f963-415b-8a93-d97644f725cc) |
+| 宵宫      | 日文     | 44100 Hz    | こんにちは、皆さん。今日は素晴らしい一日ですね。                | 🔊 [Play](https://github.com/user-attachments/assets/f2fb34e2-fb2d-4e8a-8c95-4555f0adf9aa) |
+| 椿        | 日文     | 44100 Hz    | あなたといると、なぜか落ち着くの。              | 🔊 [Play](https://github.com/user-attachments/assets/2e2a6951-a435-4a0c-a9a3-23241c42049c) |
+| 野兽先辈  | 日文     | 44100 Hz    | にじゅうよんさいはがくせいです                                  | 🔊 [Play](https://github.com/user-attachments/assets/ea56d3e1-4de4-43c9-ba18-ec48d9e3504d) |
 
-> 链接中的 `TODO_LINK` 占位符会在后续补充。
 
 ---
 
