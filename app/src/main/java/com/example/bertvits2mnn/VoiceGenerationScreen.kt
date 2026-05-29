@@ -66,9 +66,8 @@ fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
             verticalArrangement = Arrangement.Top
         ) {
             Spacer(modifier = Modifier.height(56.dp))
-            // 文本输入框 + 预设文案下拉选择
-            var presetExpanded by remember { mutableStateOf(false) }
-
+            // 文本输入框 + 字数提示
+            // 预设文案下拉先隐藏，保留 presetTexts 以备后用
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top
@@ -79,38 +78,15 @@ fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
                     label = { Text("输入合成文本") },
                     modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Box {
-                    IconButton(
-                        onClick = { presetExpanded = true },
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text("▼", fontSize = 18.sp)
-                    }
-                    DropdownMenu(
-                        expanded = presetExpanded,
-                        onDismissRequest = { presetExpanded = false },
-                        modifier = Modifier
-                            .widthIn(max = 300.dp)
-                            .heightIn(max = 350.dp)
-                    ) {
-                        presetTexts.forEach { text ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = text,
-                                        maxLines = 2,
-                                        fontSize = 14.sp
-                                    )
-                                },
-                                onClick = {
-                                    viewModel.updateInputText(text)
-                                    presetExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${inputText.length} 字",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .widthIn(min = 48.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -152,7 +128,7 @@ fun VoiceGenerationScreen(viewModel: VoiceViewModel = viewModel()) {
                     enabled = saveBtnEnabled,
                     onClick = {
                         keyboardController?.hide()
-                        viewModel.saveLocal(uiState.savedResult?.toFloatArray())
+                        viewModel.saveLocal(uiState.savedResult?.toFloatArray(), uiState.sampleRate)
                     },
                     modifier = Modifier.fillMaxWidth().weight(1f)
                 ) {

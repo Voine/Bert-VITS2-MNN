@@ -74,6 +74,8 @@ class VoiceViewModel : ViewModel() {
             setLoading(false)
             result ?: return@launch
             soundHandler.sendSound(result, sampleRate)
+            val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
+            _uiState.tryEmit(sendState.copy(sampleRate = sampleRate))
             updateEnableSavedBtnState(true, result.toList())
             // Auto Save the result to a WAV file if in debug mode
             if (BuildConfig.DEBUG) {
@@ -83,6 +85,7 @@ class VoiceViewModel : ViewModel() {
                             BV2Application.context,
                             BV2Application.context.filesDir.absolutePath,
                             result,
+                            sampleRate = sampleRate,
                             "output_${System.currentTimeMillis()}.wav"
                         )
                     }.onFailure {
@@ -118,7 +121,7 @@ class VoiceViewModel : ViewModel() {
         bv2SimpleInferImpl.setAudioLengthScale(lengthScale)
     }
 
-    fun saveLocal(savedResult: FloatArray?) {
+    fun saveLocal(savedResult: FloatArray?, sampleRate: Int?) {
         val path = BV2Application.context.getExternalFilesDir(null)?.absolutePath
         if (savedResult == null || path == null) {
             updateLogcat("保存失败 ${if (savedResult == null) "音频数据为空" else "路径为空"}")
@@ -131,6 +134,7 @@ class VoiceViewModel : ViewModel() {
                     BV2Application.context,
                     path,
                     savedResult,
+                    sampleRate = sampleRate,
                     fileName
                 )
             }.onFailure {
@@ -164,14 +168,14 @@ class VoiceViewModel : ViewModel() {
     private fun getDefaultTextFromSpeaker(speaker: String): String {
         return when (speaker) {
             "陈_ZH" -> "博士，欢迎来到龙门。"
-            "珐露珊_ZH",
-            "甘雨_ZH" -> "旅行者，好久不见。"
+            "珐露珊_ZH" -> "旅行者，好久不见。"
+            "甘雨_ZH" -> "工作还没有做完，又要开始搬砖了。"
             "APPLe_EN" -> "Greetings, madam. I am here. Clouds help predict the weather."
             "Sonetto_EN" -> "Timekeeper, at your service. The stars shine bright tonight."
             "Vertin_EN" -> "The storm is coming. We must prepare ourselves."
-            "八重神子_JP",
-            "宵宫_JP",
-            "椿_JP" -> "こんにちは、皆さん。今日は素晴らしい一日ですね。"
+            "八重神子_JP"-> "たびびと、きょうはどんなおもしろいほんをもってきてくれたの？もしないようがつまらなかったら、わたし、へんしゅうぶに『しげき』にいこうかな～？"
+            "宵宫_JP" -> "こんにちは、皆さん。今日は素晴らしい一日ですね。"
+            "椿_JP" -> "あなたといると、なぜか落ち着くの。"
             "野兽先辈_JP" -> "にじゅうよんさいはがくせいです"
             "22娘_MIX" -> "RTX 5090 将于明年发布，敬请期待！"
             else -> "你好，欢迎使用语音合成系统。"
@@ -213,4 +217,5 @@ data class UIState(
     val logcat: String = "",
     val saveBtnEnabled: Boolean = false,
     val savedResult: List<Float>? = null,
+    val sampleRate: Int? = null,
 )

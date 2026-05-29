@@ -23,10 +23,11 @@ fun saveWavFile(
     context: Context,
     filePath: String,
     audioFloatArray: FloatArray,
+    sampleRate: Int?,
     audioName: String = "output.wav",
 ) {
     val output = File(filePath, audioName)
-    writeWavFile(output, floatToShortArray(audioFloatArray), g_sampleRate)
+    writeWavFile(output, floatToShortArray(audioFloatArray), sampleRate ?: g_sampleRate)
 
 }
 

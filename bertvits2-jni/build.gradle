@@ -17,6 +17,9 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags ""
+                // 16 KB page size support (Android 15+ / Google Play 2025-11-01 要求)
+                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
+                        "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384"
             }
         }
         ndk{
