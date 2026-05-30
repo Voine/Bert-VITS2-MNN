@@ -12,6 +12,7 @@ import com.example.textpreprocess.zh.normal_symbols
 import com.example.textpreprocess.zh.num_ja_tones
 import com.example.textpreprocess.zh.num_zh_tones
 import com.example.textpreprocess.zh.zhSymbolsMap
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,6 +45,12 @@ class ZHENMixImpl(
     private var enG2P: EnglishG2P? = null
 
     /**
+     * 字典初始化完成信号。preprocess() 会先 await 这个 Deferred，
+     * 保证首次安装/无缓存场景下不会出现"字典还没加载好就拿空 G2P 走推理"的竞态。
+     */
+    private val initDeferred: CompletableDeferred<Unit> = CompletableDeferred()
+
+    /**
      * 字典是否已就绪，供上层判断是否走 mix 逻辑。
      */
     fun isReady(): Boolean = enG2P != null
@@ -58,8 +65,10 @@ class ZHENMixImpl(
                 symbols = normal_symbols.toSet(),
                 lexicon = lexicon
             )
+            initDeferred.complete(Unit)
         } else {
-            // 无缓存，异步触发文本解析 + 缓存生成，不阻塞当前线程
+            // 无缓存，异步触发文本解析 + 缓存生成，不阻塞当前线程；
+            // 后续 preprocess() 会 await initDeferred 确保字典就绪
             Log.i(TAG, "No binary cache, triggering async generation...")
             CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -70,14 +79,23 @@ class ZHENMixImpl(
                         lexicon = lexicon
                     )
                     Log.i(TAG, "Async CMU dict loading complete, mix mode ready")
+                    initDeferred.complete(Unit)
                 } catch (e: Exception) {
                     Log.e(TAG, "Async CMU dict loading failed", e)
+                    initDeferred.completeExceptionally(e)
                 }
             }
         }
     }
 
     override suspend fun preprocess(text: String): PreprocessResult? {
+        // 等待字典就绪；若已完成会立刻返回，不会阻塞
+        try {
+            initDeferred.await()
+        } catch (e: Exception) {
+            return PreprocessResult(errorMsg = "CMU dict init failed: ${e.message}")
+        }
+
         // 兼容旧的 <ZH>/<EN> 标签格式
         val segments = segmentByJieba(text)
 

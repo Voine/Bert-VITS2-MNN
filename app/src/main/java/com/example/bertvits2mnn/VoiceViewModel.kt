@@ -66,13 +66,29 @@ class VoiceViewModel : ViewModel() {
                 setLoading(true, "开始启动推理...")
             }
             val startTime = System.currentTimeMillis()
-            val (result, sampleRate) = bv2SimpleInferImpl.infer(text, currentSpkName) ?: return@launch
+            val inferResult = runCatching {
+                bv2SimpleInferImpl.infer(text, currentSpkName)
+            }.onFailure {
+                Log.e("runVits", "infer threw exception", it)
+                updateLogcat("推理异常: ${it.message}")
+            }.getOrNull()
+
+            // 不管成功失败，都先把 loading 状态清掉，避免 UI 卡在“生成中”
             val endTime = System.currentTimeMillis()
+            setLoading(false)
+
+            if (inferResult == null) {
+                updateLogcat("推理失败（耗时 ${endTime - startTime} ms），请查看日志")
+                return@launch
+            }
+            val (result, sampleRate) = inferResult
             updateLogcat("推理耗时: ${endTime - startTime} ms")
             Log.d("runVits", "result: ${result?.joinToString(",", limit = 10)}")
             Log.d("runVits", "infer time: ${endTime - startTime} ms")
-            setLoading(false)
-            result ?: return@launch
+            result ?: run {
+                updateLogcat("推理结果为空")
+                return@launch
+            }
             soundHandler.sendSound(result, sampleRate)
             val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
             _uiState.tryEmit(sendState.copy(sampleRate = sampleRate))
