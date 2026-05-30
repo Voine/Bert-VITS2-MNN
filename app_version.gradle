@@ -5,5 +5,5 @@ ext{
     versionCodeExt = 7
     versionNameExt = "2.0.0"
     cmakeVer = "3.22.1"
-    ndkVer = "26.3.11579264"
+    ndkVer = "28.2.13676358"
 }

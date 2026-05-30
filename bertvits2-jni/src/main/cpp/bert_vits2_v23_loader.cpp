@@ -333,6 +333,8 @@ namespace MNN_BERT_VITS2 {
         MNNBV2PRINT("Vits loader initializing...\n");
         // 创建Exector
         MNN::BackendConfig backendConfig;    // default backend config
+        backendConfig.precision = MNN::BackendConfig::PrecisionMode::Precision_Low_BF16;
+        backendConfig.memory = MNN::BackendConfig::MemoryMode::Memory_Low;
         std::shared_ptr<MNN::Express::Executor> executor = MNN::Express::Executor::newExecutor(MNN_FORWARD_CPU, backendConfig, 4);
 
         // 设置使用4线程+CPU
