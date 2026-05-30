@@ -37,7 +37,7 @@ Waveform output (.wav)
 
 ## 🎵 示例音频
 
-下表展示了 demo App 中内置的角色样例，完整角色清单可参考 [`VoiceViewModel.kt`](app/src/main/java/com/example/bertvits2mnn/VoiceViewModel.kt)。中文角色基于部分明日方舟语音集以及[原神语音集](https://www.bilibili.com/opus/804258696892776484)等公开数据训练，日 / 英角色基于各自游戏对应公开语音集训练。
+下表展示了 demo App 中内置的角色样例，完整角色清单可参考 [`VoiceViewModel.kt`](app/src/main/java/com/example/bertvits2mnn/VoiceViewModel.kt)。中文角色基于部分明日方舟语音集、鸣潮语音集、拜年祭视频以及[原神语音集](https://www.bilibili.com/opus/804258696892776484)等公开数据训练，日 / 英角色基于各自游戏对应公开语音集训练，英文有些示例语音有点破音，日文语音有点无口感，多半是微调数据里面掺了复杂的东西导致学岔了(雾，相信你们炼自己的角色能弄得更好~。
 
 | Character | Language | Sample Rate | Text                                                          | Audio |
 |-----------|----------|-------------|---------------------------------------------------------------|-------|
@@ -164,6 +164,12 @@ git lfs track "*.mnn"
 ## 💡 关于 - third_party -
 
 目前在 third_party 内的 cppjieba、tokenizer-cpp 以及 MNN 仅是为了提供头文件，若需要自行编译 tokenizer-cpp 并替换产物 [libtokenizers_c.a](cpptokenizer/src/main/jniStaticLibs/arm64-v8a/libtokenizers_c.a) [libtokenizers_cpp.a](cpptokenizer/src/main/jniStaticLibs/arm64-v8a/libtokenizers_cpp.a)，需修改 [huggingface_tokenizer.cc](third_party/tokenizers-cpp/src/huggingface_tokenizer.cc) 内的 add_special_tokens 默认为 true
+
+---
+
+## 💡 其他注意事项
+
+Bert 模型作为整个系统的输入，很多时候只是起一个辅助的作用，有时候去掉了也不会对推理结果造成毁灭性的影响，可能就会是呆一点？平淡一点或者有点脱线的感觉 :)，但 Bert 模型本身哪怕经过蒸馏有时候体积也是很大的，所以在实际工程接入时，可以考虑对其进行取舍~
 
 ---
 

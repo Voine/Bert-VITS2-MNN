@@ -37,7 +37,7 @@ Waveform output (.wav)
 
 ## 🎵 Sample Audio
 
-The speakers bundled in the demo app are listed below. The full list lives in [`VoiceViewModel.kt`](app/src/main/java/com/example/bertvits2mnn/VoiceViewModel.kt). Chinese speakers are trained on public voice sets from Arknights and [Genshin Impact](https://www.bilibili.com/opus/804258696892776484); Japanese / English speakers come from the public voice sets of their respective games.
+The speakers bundled in the demo app are listed below. The full list lives in [`VoiceViewModel.kt`](app/src/main/java/com/example/bertvits2mnn/VoiceViewModel.kt). Chinese speakers are trained on public voice sets from Arknights, Wuthering Waves, Bilibili New Year Gala videos and [Genshin Impact](https://www.bilibili.com/opus/804258696892776484); Japanese / English speakers come from the public voice sets of their respective games. Some English samples have minor distortion, and the Japanese samples sound a bit flat — most likely because the fine-tuning data mixed in some messy stuff and the model learned the wrong things (fog). Feel free to train your own characters and you should get noticeably better results~
 
 | Character | Language | Sample Rate | Text                                                          | Audio |
 |-----|----------|-------------|---------------------------------------------------------------|-------|
@@ -152,13 +152,19 @@ See [`distill/README.md`](distill/README.md) for the distillation scripts.
 ./MNNConvert --modelFile your_path_to_onnx.onnx --MNNModel your_path_to_mnn.mnn --framework ONNX --bizCode MNN --weightQuantBits 8 --weightQuantAsymmetric
 ```
 
-4. Drop the `.mnn` files under `bertvits2-jni/src/main/assets/bv2_model`. update the code in `BertVITS2SimpleInferImpl.kt`.
+4. Drop the `.mnn` files under `bertvits2-jni/src/main/assets/bv2_model`, then update the loading code in `BertVITS2SimpleInferImpl.kt` accordingly.
 
 ---
 
 ## 💡 Notes — third_party
 
 `third_party/{cppjieba, tokenizers-cpp, MNN}` is only there to provide headers. If you want to rebuild tokenizer-cpp and replace the prebuilt [libtokenizers_c.a](cpptokenizer/src/main/jniStaticLibs/arm64-v8a/libtokenizers_c.a) / [libtokenizers_cpp.a](cpptokenizer/src/main/jniStaticLibs/arm64-v8a/libtokenizers_cpp.a), remember to flip `add_special_tokens` to `true` in [huggingface_tokenizer.cc](third_party/tokenizers-cpp/src/huggingface_tokenizer.cc).
+
+---
+
+## 💡 Other Notes
+
+The BERT model mainly serves as an auxiliary input to the whole system — in many cases dropping it doesn't break inference, the voice just ends up a bit duller / flatter / slightly off. Even after distillation the BERT model can still be sizeable, so when integrating into a real product, feel free to trade it off based on your size budget.
 
 ---
 
