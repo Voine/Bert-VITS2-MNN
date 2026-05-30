@@ -164,7 +164,8 @@ See [`distill/README.md`](distill/README.md) for the distillation scripts.
 
 ## 💡 Other Notes
 
-The BERT model mainly serves as an auxiliary input to the whole system — in many cases dropping it doesn't break inference, the voice just ends up a bit duller / flatter / slightly off. Even after distillation the BERT model can still be sizeable, so when integrating into a real product, feel free to trade it off based on your size budget.
+- The BERT model mainly serves as an auxiliary input to the whole system — in many cases dropping it doesn't break inference, the voice just ends up a bit duller / flatter / slightly off. Even after distillation the BERT model can still be sizeable, so when integrating into a real product, feel free to trade it off based on your size budget.
+- Since the demo app bundles inference for multiple languages, a lot of components are wired up as lazy-init. As a result the **first** inference is noticeably slower. In a real product you can either hide the lazy-init work behind some other flow (e.g. splash / preload), or optimize the lazy-init path itself.
 
 ---
 
