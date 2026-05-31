@@ -65,6 +65,25 @@ If you want to fine-tune from this base model, please pair it with [BertVITS2](h
 
 ---
 
+## 📊 On-device Inference Performance
+
+A reference measurement on a mid-flagship SoC, intended as a rough order-of-magnitude indicator:
+
+| Item                 | Value                                                                                          |
+|----------------------|------------------------------------------------------------------------------------------------|
+| Device               | Qualcomm Snapdragon 888                                                                        |
+| Model sample rate    | 22050 Hz                                                                                       |
+| Model size           | ≈ **29.7 MB** (full 22050 Hz BV2 modules in MNN, int8 weight-quant)                            |
+| Test text            | *"RTX 5090 将于明年发布，敬请期待"* (ZH + EN mixed, ~10 CJK chars + 1 English token)                      |
+| End-to-end latency   | ≈ **1856 ms** (text preprocessing + Encoder + Flow + Decoder)                                  |
+| Synthesized audio    | ≈ **5.20 s** (22050 Hz × 114688 frames)                                                        |
+| **RTF**              | ≈ **0.357** (< 1 means inference is faster than real-time playback, suitable for streaming use) |
+| Estimated throughput | ≈ **2.80 s** of audio synthesized per wall-clock second                                        |
+
+> Real numbers fluctuate with SoC tier, thermal state, scheduler behavior, text length, and backendConfig difference — the figures above are order-of-magnitude only. Newer platforms such as Snapdragon 8 Gen2 / 8 Gen3 are typically another 30%–50% faster.
+
+---
+
 ## 📦 Integrating as AAR
 
 The `bertvits2-infer-wrapper` module (along with all its native dependencies) is `maven-publish` ready. Producing AARs for downstream apps is a single command:
