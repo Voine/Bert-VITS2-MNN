@@ -1,0 +1,4 @@
+<resources>
+    <!-- 设置页由系统 TTS 设置直接拉起，宿主 App 的主题不一定适用，这里给一个自带主题 -->
+    <style name="Theme.Bv2Tts.Settings" parent="Theme.AppCompat.DayNight.DarkActionBar" />
+</resources>

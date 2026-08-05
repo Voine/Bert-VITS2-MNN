@@ -96,6 +96,19 @@ See [PUBLISHING.md](PUBLISHING.md) for the full guide — custom coordinates, lo
 
 ---
 
+## 🗣️ Using It as a System TTS Engine
+
+The `bertvits2-tts-service` module implements Android's `TextToSpeechService`. Once the demo app (or any app depending on this module) is installed, the engine shows up under **Settings → System → Languages & input → Text-to-speech output → Preferred engine**, and can then be driven by TalkBack, system read-aloud, or any app using the `TextToSpeech` API — fully offline.
+
+- **Every speaker is a `Voice`**: exposed through `onGetVoices` with names like `bv2-甘雨_ZH`, so callers can pin one via `TextToSpeech.setVoice`.
+- **Default speaker / rate**: tap the gear next to the engine in system TTS settings to pick a default speaker per language (ZH / EN / JP) and tune the base length scale, with in-place preview. The system speech-rate slider is applied on top, inversely.
+- **Sentence-level streaming**: long text is split on punctuation (`TtsTextSplitter`) and synthesized sentence by sentence, pushing audio through `SynthesisCallback` as it is produced — time-to-first-audio depends on the first sentence only, not the whole passage.
+- **One shared model**: the demo UI and the TTS service share a reference-counted `Bv2InferManager` singleton in the same process, so models are loaded once and inference runs serialized.
+
+Downstream apps only need the single `bertvits2-tts-service` coordinate — the service/activity manifest entries are merged in from the AAR. Supported languages: `zh-CN` / `en-US` / `ja-JP`. Pitch is not supported by the model and is ignored.
+
+---
+
 ## ⚡ Build Guide
 
 ### Clone with submodules
@@ -196,6 +209,7 @@ See [`distill/README.md`](distill/README.md) for the distillation scripts.
 │       ├── assets                    # mnn bert model, cppjieba dict, mnn bv2 model
 │       └── java/                     # UI / ViewModel
 ├── bertvits2-infer-wrapper/          # Public inference entry (publishable as AAR)
+├── bertvits2-tts-service/            # System TTS engine (TextToSpeechService + settings)
 ├── bertvits2-jni/                    # Bert-VITS2 inference JNI
 ├── text-preprocess/                  # ZH / JP / EN / mixed text preprocessing
 ├── cppjieba/                         # cppjieba interface

@@ -1,0 +1,15 @@
+<resources>
+    <string name="bv2_tts_engine_label">Bert-VITS2 (MNN)</string>
+    <string name="bv2_tts_settings_title">Bert-VITS2 引擎设置</string>
+
+    <string name="bv2_tts_speaker_zh">中文默认角色</string>
+    <string name="bv2_tts_speaker_en">英文默认角色</string>
+    <string name="bv2_tts_speaker_jp">日文默认角色</string>
+    <string name="bv2_tts_length_scale">基础语速（length scale）</string>
+    <string name="bv2_tts_length_scale_hint">数值越大语速越慢，系统语速滑条会在此基础上叠加</string>
+    <string name="bv2_tts_preview">试听</string>
+    <string name="bv2_tts_loading">模型初始化中…</string>
+    <string name="bv2_tts_init_failed">模型初始化失败，请查看日志</string>
+    <string name="bv2_tts_no_speaker">没有可用角色</string>
+    <string name="bv2_tts_previewing">合成中…</string>
+</resources>

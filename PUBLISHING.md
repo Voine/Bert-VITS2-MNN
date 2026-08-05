@@ -7,6 +7,8 @@
 - `bertvits2-jni`（推理 JNI）
 - `cpptokenizer`、`cppjieba`、`openjtalk`（native 三件套）
 
+另外还有一个可选模块 `bertvits2-tts-service`（系统 TTS 引擎，`api` 依赖 `bertvits2-infer-wrapper`）。如果下游只想自己调推理，引 `bertvits2-infer-wrapper` 即可；如果想让 App 同时成为系统 TTS 引擎，改引 `bertvits2-tts-service`，Service / 引擎设置页的 manifest 声明会随 AAR 合并进来。
+
 由于这些模块各自带有 native 代码（`.so`），一个"胖 AAR"会带来不少坑（AGP 8+ 的 fat-aar 兼容性差）。所以采用 **多 AAR + 本地 Maven 仓库** 的方式发布，下游只需要引一个坐标即可把整个依赖图拉进来。
 
 ---
@@ -28,6 +30,7 @@ build/repo/
     │   ├── bertvits2-infer-wrapper-1.0.5.aar
     │   ├── bertvits2-infer-wrapper-1.0.5.pom
     │   └── ...
+    ├── bertvits2-tts-service/1.0.5/...
     ├── text-preprocess/1.0.5/...
     ├── bertvits2-jni/1.0.5/...
     ├── cpptokenizer/1.0.5/...

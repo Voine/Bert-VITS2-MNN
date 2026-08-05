@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.bertvits2_infer_wrapper.interfaces.IBertVITS2FullInfer
 import com.example.bertvits2_infer_wrapper.interfaces.IBertVITS2SimpleInfer
+import com.example.bertvits2_infer_wrapper.interfaces.SpeakerInfo
 import com.example.bertvits2_infer_wrapper.utils.copyAssets2Local
 import com.example.bertvits2_infer_wrapper.utils.safeResume
 import com.example.textpreprocess.preprocess.LANGUAGE_EN
@@ -110,6 +111,21 @@ class BertVITS2SimpleInferImpl(val context: Context): IBertVITS2SimpleInfer {
 
     override fun getSpkNameList(): List<String> {
         return nameListCache.keys.toList()
+    }
+
+    override fun getSpeakerInfoList(): List<SpeakerInfo> {
+        return nameListCache.map { (name, idAndDir) ->
+            SpeakerInfo(
+                name = name,
+                // mix 模型以中文为主语言，归到 zh-CN
+                languageTag = when (idAndDir.split("-").getOrNull(1)) {
+                    "en" -> "en-US"
+                    "jp" -> "ja-JP"
+                    else -> "zh-CN"
+                },
+                sampleRate = speakerSampleRateCache[name] ?: 0,
+            )
+        }
     }
 
     override suspend fun infer(text: String, spkName: String): Pair<FloatArray?, Int>? {

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <!-- 系统 TTS 引擎入口，出现在「设置 → 语言和输入 → 文字转语音输出」引擎列表中 -->
+        <service
+            android:name="com.example.bertvits2.tts.BertVits2TtsService"
+            android:exported="true"
+            android:label="@string/bv2_tts_engine_label">
+            <intent-filter>
+                <action android:name="android.intent.action.TTS_SERVICE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.speech.tts"
+                android:resource="@xml/bv2_tts_engine" />
+        </service>
+
+        <!-- 引擎设置页（tts_engine.xml 里的 settingsActivity，系统 TTS 设置里的齿轮） -->
+        <activity
+            android:name="com.example.bertvits2.tts.TtsSettingsActivity"
+            android:exported="true"
+            android:label="@string/bv2_tts_settings_title"
+            android:theme="@style/Theme.Bv2Tts.Settings">
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.CONFIGURE_ENGINE" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- 系统检查引擎语音数据是否就绪 -->
+        <activity
+            android:name="com.example.bertvits2.tts.CheckVoiceDataActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.CHECK_TTS_DATA" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- 系统 TTS 设置页「收听示例」取示例文本 -->
+        <activity
+            android:name="com.example.bertvits2.tts.GetSampleTextActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.GET_SAMPLE_TEXT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

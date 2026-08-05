@@ -3,8 +3,7 @@ package com.example.bertvits2mnn
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bertvits2_infer_wrapper.impl.BertVITS2SimpleInferImpl
-import com.example.bertvits2_infer_wrapper.interfaces.IBertVITS2SimpleInfer
+import com.example.bertvits2.tts.Bv2InferManager
 import com.example.bertvits2mnn.utils.saveWavFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -29,17 +28,25 @@ class VoiceViewModel : ViewModel() {
     private var currentSpkName: String = ""
 
     private lateinit var speakers: List<String>
-    private val bv2SimpleInferImpl: IBertVITS2SimpleInfer by lazy {
-        BertVITS2SimpleInferImpl(BV2Application.context)
-    }
     private var firstInferDone: Boolean = false
+
+    /** 由 [Bv2InferManager] 在推理时统一下发，UI 只负责记录当前值 */
+    @Volatile
+    private var currentLengthScale: Float = 1.0f
 
     fun init() {
         setLoading(true, "正在初始化...")
+        // 与系统 TTS 引擎（BertVits2TtsService）共用同一份模型实例
+        Bv2InferManager.acquire(BV2Application.context)
         viewModelScope.launch(Dispatchers.Default) {
             val startTime = System.currentTimeMillis()
             setLoading(true, "正在初始化 VITS...")
-            bv2SimpleInferImpl.init()
+            val initSuccess = Bv2InferManager.ensureInit()
+            if (!initSuccess) {
+                updateLogcat("初始化失败，请查看日志")
+                setLoading(false)
+                return@launch
+            }
             initCharacters()
             setDefaultState()
             val endTime = System.currentTimeMillis()
@@ -67,7 +74,7 @@ class VoiceViewModel : ViewModel() {
             }
             val startTime = System.currentTimeMillis()
             val inferResult = runCatching {
-                bv2SimpleInferImpl.infer(text, currentSpkName)
+                Bv2InferManager.synthesize(text, currentSpkName, currentLengthScale)
             }.onFailure {
                 Log.e("runVits", "infer threw exception", it)
                 updateLogcat("推理异常: ${it.message}")
@@ -83,12 +90,8 @@ class VoiceViewModel : ViewModel() {
             }
             val (result, sampleRate) = inferResult
             updateLogcat("推理耗时: ${endTime - startTime} ms")
-            Log.d("runVits", "result: ${result?.joinToString(",", limit = 10)}")
+            Log.d("runVits", "result: ${result.joinToString(",", limit = 10)}")
             Log.d("runVits", "infer time: ${endTime - startTime} ms")
-            result ?: run {
-                updateLogcat("推理结果为空")
-                return@launch
-            }
             soundHandler.sendSound(result, sampleRate)
             val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
             _uiState.tryEmit(sendState.copy(sampleRate = sampleRate))
@@ -134,7 +137,7 @@ class VoiceViewModel : ViewModel() {
         updateLogcat("语音缩放系数: $lengthScale")
         val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
         _uiState.tryEmit(sendState.copy(currentLengthScale = lengthScale))
-        bv2SimpleInferImpl.setAudioLengthScale(lengthScale)
+        currentLengthScale = lengthScale
     }
 
     fun saveLocal(savedResult: FloatArray?, sampleRate: Int?) {
@@ -199,7 +202,7 @@ class VoiceViewModel : ViewModel() {
     }
 
     private fun initCharacters() {
-        this.speakers = bv2SimpleInferImpl.getSpkNameList()
+        this.speakers = Bv2InferManager.speakerNames()
         val sendState = _uiState.replayCache.firstOrNull() ?: UIState()
         _uiState.tryEmit(sendState.copy(characters = speakers))
     }
@@ -218,7 +221,8 @@ class VoiceViewModel : ViewModel() {
     }
 
     override fun onCleared() {
-        bv2SimpleInferImpl.release()
+        // 引用计数递减，系统 TTS 引擎还在用时不会真正销毁 loader
+        Bv2InferManager.release()
         super.onCleared()
     }
 }

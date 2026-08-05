@@ -24,6 +24,7 @@ def publishableModules = [
     ':bertvits2-jni',
     ':text-preprocess',
     ':bertvits2-infer-wrapper',
+    ':bertvits2-tts-service',
 ]
 
 tasks.register('publishAars') {

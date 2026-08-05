@@ -44,6 +44,8 @@ android {
 
 dependencies {
     implementation project(':bertvits2-infer-wrapper')
+    // 系统 TTS 引擎（Service / 设置页由该模块的 manifest 合并进来）
+    implementation project(':bertvits2-tts-service')
     implementation libs.androidx.core.ktx
     implementation platform(libs.androidx.compose.bom)
     implementation libs.androidx.lifecycle.runtime.ktx

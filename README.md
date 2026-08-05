@@ -97,6 +97,19 @@ Waveform output (.wav)
 
 ---
 
+## 🗣️ 作为系统 TTS 引擎使用
+
+`bertvits2-tts-service` 模块实现了 Android 的 `TextToSpeechService`，装上 demo App（或任何依赖该模块的 App）后，本引擎会出现在 **设置 → 系统 → 语言和输入 → 文字转语音输出 → 首选引擎** 里，选中即可被 TalkBack、系统朗读、以及任意使用 `TextToSpeech` API 的 App 调用，全程离线。
+
+- **角色即 Voice**：每个 speaker 会通过 `onGetVoices` 暴露成一个 `Voice`，名字形如 `bv2-甘雨_ZH`，调用方可以 `TextToSpeech.setVoice` 精确指定。
+- **默认角色 / 语速**：系统 TTS 设置里点引擎旁边的齿轮进入设置页，可以为中 / 英 / 日各选一个默认角色，并调整基础 length scale（可就地试听）。系统语速滑条会在此基础上按反比叠加。
+- **分句流式合成**：长文本会先按标点切成短句（`TtsTextSplitter`），逐句推理并通过 `SynthesisCallback` 边合成边吐音频，首字延迟只取决于第一句而非整段。
+- **共用一份模型**：demo UI 与 TTS Service 同进程共享带引用计数的 `Bv2InferManager` 单例，不会重复加载模型；所有推理串行执行。
+
+下游 App 只要引入 `bertvits2-tts-service` 这一个坐标，Service / 设置页的 manifest 声明会随 AAR 自动合并进来，无需额外配置。语言支持 `zh-CN` / `en-US` / `ja-JP`；音高（pitch）参数模型不支持，会被忽略。
+
+---
+
 ## ⚡ 本地编译指南
 
 ### Clone with submodules
@@ -201,6 +214,7 @@ git lfs track "*.mnn"
 │       ├── assets                    # mnn bert model, cppjieba dic, mnn bv2 model
 │       └── java/                     # UI / ViewModel
 ├── bertvits2-infer-wrapper/          # 对外推理入口（可打 AAR 给其它 App 接入）
+├── bertvits2-tts-service/            # 系统 TTS 引擎（TextToSpeechService + 引擎设置页）
 ├── bertvits2-jni/                    # Bert-VITS2 推理 JNI
 ├── text-preprocess/                  # 中 / 日 / 英 / 混合 文本预处理
 ├── cppjieba/                         # cppjieba interface

@@ -1,0 +1,40 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+}
+apply from: '../app_version.gradle'
+
+android {
+    namespace 'com.example.bertvits2.tts'
+    compileSdk compileSdkVer
+    ndkVersion ndkVer
+
+    defaultConfig {
+        minSdk minSdkVer
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+
+dependencies {
+    // api：下游只引本模块也能拿到 SpeakerInfo / IBertVITS2SimpleInfer
+    api project(':bertvits2-infer-wrapper')
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+
+    testImplementation libs.junit
+}
+
+apply from: "$rootDir/publish-aar.gradle"
